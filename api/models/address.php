@@ -104,10 +104,10 @@ class Address
         // excludePing
         // editDate
         if(!isset($this->subnetId) || !is_numeric($this->subnetId))               { throw new Exception('Invalid subnet Id'); }                //mandatory parameters
-        if(!isset($this->id_addr))                                                { throw new Exception('Invalid address'); }                  //mandatory parameters
-        if($this->allowRequests != 0 || $this->allowRequests !=1)                 { throw new Exception('Invalid allow requests value'); }
-        if($this->showName != 0 || $this->showName !=1)                           { throw new Exception('Invalid show Name value'); }
-        if($this->pingAddress != 0 || $this->pingAddress !=1)                     { throw new Exception('Invalid ping address value'); }
+        if(!isset($this->ip_addr))                                                { throw new Exception('Invalid address'); }                  //mandatory parameters
+        // if($this->allowRequests != 0 || $this->allowRequests !=1)                 { throw new Exception('Invalid allow requests value'); }
+        // if($this->showName != 0 || $this->showName !=1)                           { throw new Exception('Invalid show Name value'); }
+        // if($this->pingAddress != 0 || $this->pingAddress !=1)                     { throw new Exception('Invalid ping address value'); }
 
 
         //output format
@@ -115,8 +115,9 @@ class Address
         
         //create array to write new subnet
         $newAddress = $this->toArray($this, $format);
-        //create new subnet
-        $res = UpdateSubnet2 ($newSubnet, true);                                //true means from API    
+        //create new address
+        #$res = UpdateSubnet2 ($newSubnet, true);                                //true means from API    
+        $res = UpdateAddress ($newAddress, true);                                //true means from API    
         //return result (true/false)
         if(!$res)                                                                 { throw new Exception('Invalid query'); } 
         else {

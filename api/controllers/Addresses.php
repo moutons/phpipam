@@ -30,7 +30,7 @@ class Addresses
 	/** 
 	* create new address 
 	*/
-	public function createAddresses($_params)
+	public function createAddresses()
 	{
 		//init section class
                 // id
