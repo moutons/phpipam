@@ -13,6 +13,13 @@ isUserAuthenticated(false);
 /* verify that user is admin */
 if (!checkAdmin()) die('');
 
+/* escape vars to prevent SQL injection */
+$_POST = filter_user_input ($_POST, true, true);
+
+/* must be numeric */
+if(!is_numeric($_POST['subnetId']))	{ die('<div class="alert alert-danger">'._("Invalid ID").'</div>'); }
+
+
 /* verify post */
 CheckReferrer();
 
@@ -26,12 +33,20 @@ $subnet = getSubnetDetailsById($_POST['subnetId']);
 
 
 <!-- header -->
-<div class="pHeader"><?php print _('Manage subnet permissions'); ?></div>
+<div class="pHeader">
+	<?php 
+	if($subnet['isFolder']==1)	{ print _('Manage folder permissions');  }
+	else						{ print _('Manage subnet permissions');  }		
+	?>
+</div>
 
 <!-- content -->
 <div class="pContent">
 
-	<?php print _('Manage permissions for subnet'); ?> <?php print transform2long($subnet['subnet'])."/".$subnet['mask']." ($subnet[description])"; ?>
+	<?php 
+	if($subnet['isFolder']==1)	{ print _('Manage permissions for folder')." $subnet[description]"; }
+	else						{ print _('Manage permissions for subnet'); ?> <?php print transform2long($subnet['subnet'])."/".$subnet['mask']." ($subnet[description])"; }
+	?>
 	<hr>
 
 	<form id="editSubnetPermissions">
@@ -47,12 +62,13 @@ $subnet = getSubnetDetailsById($_POST['subnetId']);
 	}
 
 	# print each group
+	if($groups) {
 	foreach($groups as $g) {
 		print "<tr>";
 		print "	<td>$g[g_name]</td>";
 		print "	<td>";
 			
-		print "<label class='checkbox inline noborder'>";			
+		print "<span class='checkbox inline noborder'>";			
 
 		print "	<input type='radio' name='group$g[g_id]' value='0' checked> na";
 		if($permissons[$g['g_id']] == "1")	{ print " <input type='radio' name='group$g[g_id]' value='1' checked> ro"; }			
@@ -61,13 +77,18 @@ $subnet = getSubnetDetailsById($_POST['subnetId']);
 		else								{ print " <input type='radio' name='group$g[g_id]' value='2'> rw"; }			
 		if($permissons[$g['g_id']] == "3")	{ print " <input type='radio' name='group$g[g_id]' value='3' checked> rwa"; }			
 		else								{ print " <input type='radio' name='group$g[g_id]' value='3'> rwa"; }
-		print "</label>";
+		print "</span>";
 
 		# hidden
 		print "<input type='hidden' name='subnetId' value='$_POST[subnetId]'>";
 		
 		print "	</td>";
 		print "</tr>";
+	}
+	} else {
+		print "<tr>";
+		print "	<td colspan='2'><span class='alert alert-info'>"._('No groups available')."</span></td>";
+		print "</tr>";		
 	}
 	?>
      
@@ -84,8 +105,10 @@ $subnet = getSubnetDetailsById($_POST['subnetId']);
 
 <!-- footer -->
 <div class="pFooter">
-	<button class="btn btn-small hidePopups"><?php print _('Cancel'); ?></button>
-	<button class="btn btn-small btn-success editSubnetPermissionsSubmit"><i class="icon-white icon-ok"></i> <?php print _('Set permissions'); ?></button>
+	<div class="btn-group">
+		<button class="btn btn-sm btn-default hidePopups"><?php print _('Cancel'); ?></button>
+		<button class="btn btn-sm btn-default btn-success editSubnetPermissionsSubmit"><i class="fa fa-check"></i> <?php print _('Set permissions'); ?></button>
+	</div>
 
 	<div class="editSubnetPermissionsResult"></div>
 </div>

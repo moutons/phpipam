@@ -7,9 +7,16 @@
 /* required functions */
 require_once('../../functions/functions.php'); 
 
+/* filter input */
+$_POST = filter_user_input($_POST, true, true, false);
+
+/* must be numeric */
+if(!is_numeric($_POST['subnetId']))	{ die('<div class="alert alert-danger">'._("Invalid ID").'</div>'); }
+
+
 /* verify that user has write permissions for subnet */
-$subnetPerm = checkSubnetPermission ($_REQUEST['subnetId']);
-if($subnetPerm < 3) 	{ die('<div class="alert alert-error">'._('You do not have permissions to resize subnet').'!</div>'); }
+$subnetPerm = checkSubnetPermission ($_POST['subnetId']);
+if($subnetPerm < 3) 	{ die('<div class="alert alert-danger">'._('You do not have permissions to resize subnet').'!</div>'); }
 
 
 /* verify post */
@@ -29,18 +36,32 @@ $section = getSectionDetailsById($subnetOld['sectionId']);
  */
 $ipaddresses   = getIpAddressesBySubnetIdSort ($_POST['subnetId'], "ip_addr", "asc");		# get all IP addresses
 
+
+# check if it possible
+if (!$newSubnet = getSubnetNetworkAddress(transform2long($subnetOld['subnet']) . "/" . $_POST['newMask'])) {
+	$errors[] = _("New subnet not possible") . "!";
+}
+ 
 foreach($ipaddresses as $ip) {
 	# check against new subnet
-	$error = VerifyIpAddress( transform2long($ip['ip_addr']), transform2long($subnetOld['subnet'])."/".$_POST['newMask'] );
+	$error = VerifyIpAddress(transform2long($ip['ip_addr']), $newSubnet);
 	
 	if(!$error) {}	# ok - false returns if no error is found
 	else {
 		$errors[] = $error;
 	} 
 }
+ 
+# Check if new subnet size doesn't overlap
+if ($section['strictMode'] == 1) {
+    if ($overlap = verifyResizedSubnetOverlapping($subnetOld, $newSubnet)) {
+        $errors[] = $overlap;
+    }
+}
 
 /* ask must be > 8 */
-if($_POST['newMask'] < 8) { die('<div class="alert alert-error">'._('New mask must be at least /8').'!</div>'); }
+if($_POST['newMask'] < 8) { die('<div class="alert alert-danger">'._('New mask must be at least /8').'!</div>'); }
+
 
 /* 
  * if strict mode is enabled check that is is still inside master subnet!
@@ -72,7 +93,7 @@ if($section['strictMode'] == 1) {
 
 /* if no errors edit! */
 if(sizeof($errors) > 0) {
-	print "<div class='alert alert-error'><ul>";
+	print "<div class='alert alert-danger'><ul>";
 	foreach($errors as $error) {
 		print "<li>$error</li>";
 	}
@@ -81,7 +102,7 @@ if(sizeof($errors) > 0) {
 # all good, edit subnet!
 else {
 	# failed
-    if (!modifySubnetMask ($_POST['subnetId'], $_POST['newMask'])) 	{ print '<div class="alert alert-error">'._('Error resizing subnet').'!</div>'; }
+    if (!modifySubnetMask ($_POST['subnetId'], $_POST['newMask'])) 	{ print '<div class="alert alert-danger">'._('Error resizing subnet').'!</div>'; }
     # all good
     else 															{ print '<div class="alert alert-success">'._('Subnet resized successfully').'!</div>'; } 
 }

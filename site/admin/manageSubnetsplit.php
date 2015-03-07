@@ -7,9 +7,17 @@
 /* required functions */
 require_once('../../functions/functions.php'); 
 
+/* filter input */
+$_POST = filter_user_input($_POST, true, true, false);
+$_POST['action'] = filter_user_input($_POST['action'], false, false, true);
+
+/* must be numeric */
+if(!is_numeric($_POST['subnetId']))	{ die('<div class="alert alert-danger">'._("Invalid ID").'</div>'); }
+
+
 /* verify that user has write permissions for subnet */
-$subnetPerm = checkSubnetPermission ($_REQUEST['subnetId']);
-if($subnetPerm < 3) 	{ die('<div class="alert alert-error">'._('You do not have permissions to resize subnet').'!</div>'); }
+$subnetPerm = checkSubnetPermission ($_POST['subnetId']);
+if($subnetPerm < 3) 	{ die('<div class="alert alert-danger">'._('You do not have permissions to resize subnet').'!</div>'); }
 
 
 /* verify post */
@@ -42,7 +50,7 @@ for($mask=($subnet['mask']+1); $mask<=$maxMask; $mask++) {
 	$n = $n * 2;
 	
 	# max number = 16!
-	if($n > 16) {
+	if($n > 256) {
 		$mask = 1000;
 	}
 }
@@ -69,7 +77,7 @@ for($mask=($subnet['mask']+1); $mask<=$maxMask; $mask++) {
     <tr>
         <td class="middle"><?php print _('Number of subnets'); ?></td>
         <td style="vertical-align:middle">
-	    	<select name="number">
+	    	<select name="number" class="form-control input-sm input-w-auto">
 	    	<?php
 	    	foreach($opts as $line) {
 		    	print "<option value='$line[number]'>$line[number]x /$line[mask] subnet ($line[number]x $line[max] hosts)</option>";
@@ -84,7 +92,7 @@ for($mask=($subnet['mask']+1); $mask<=$maxMask; $mask++) {
     <tr>
         <td class="middle"><?php print _('Group under current'); ?></td>
         <td>
-	        <select name="group" class="input-small">
+	        <select name="group" class="form-control input-sm input-w-auto">
 	        	<option value="no" ><?php print _('No'); ?></option>
 	        	<option value="yes"><?php print _('Yes'); ?></option>
 	        </select>
@@ -103,7 +111,7 @@ for($mask=($subnet['mask']+1); $mask<=$maxMask; $mask++) {
     </form> 
 
     <!-- warning -->
-    <div class="alert alert-warn">
+    <div class="alert alert-warning">
     <?php print _('You can split subnet to smaller subnets by specifying new subnets. Please note:'); ?>
     <ul>
     	<li><?php print _('Existing IP addresses will be assigned to new subnets'); ?></li>
@@ -117,8 +125,10 @@ for($mask=($subnet['mask']+1); $mask<=$maxMask; $mask++) {
 
 <!-- footer -->
 <div class="pFooter">
-	<button class="btn btn-small hidePopup2"><?php print _('Cancel'); ?></button>
-	<button class="btn btn-small btn-success" id="subnetSplitSubmit"><i class="icon-white icon-ok"></i> <?php print _('Split subnet'); ?></button>
+	<div class="btn-group">
+		<button class="btn btn-sm btn-default hidePopup2"><?php print _('Cancel'); ?></button>
+		<button class="btn btn-sm btn-default btn-success" id="subnetSplitSubmit"><i class="fa fa-ok"></i> <?php print _('Split subnet'); ?></button>
+	</div>
 
 	<div class="subnetSplitResult"></div>
 </div>

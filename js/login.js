@@ -25,14 +25,17 @@ function hideSpinner() {
 
 /*	Login redirect function if success
 ****************************************/
-function loginRedirect() { window.location="dashboard/"; }
+function loginRedirect() { 
+	var base = $('.iebase').html();
+	window.location=base; 
+}
 
 /*	submit login 
 *********************/
 $('form#login').submit(function() {
     //stop all active animations
     $('div#loginCheck').stop(true,true);
-    //get login data
+    
     var logindata = $(this).serialize();
     
     $('div#loginCheck').hide();
@@ -40,7 +43,7 @@ $('form#login').submit(function() {
     $.post('site/login/loginCheck.php', logindata, function(data) {
         $('div#loginCheck').html(data).fadeIn('fast');
         //reload after 2 seconds if succeeded!
-        if(data.search("error") == -1) {
+        if(data.search("alert alert-danger") == -1) {
             showSpinner();
             //search for redirect
             if($('form#login input#phpipamredirect').length > 0) { setTimeout(function (){window.location=$('form#login input#phpipamredirect').val();}, 1500); }

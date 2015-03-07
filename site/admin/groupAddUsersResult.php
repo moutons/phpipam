@@ -10,6 +10,12 @@ require_once('../../functions/functions.php');
 /* verify that user is admin */
 checkAdmin();
 
+/* filter input */
+$_POST = filter_user_input($_POST, true, true, false);
+
+/* must be numeric */
+if(!is_numeric($_POST['gid']))		{ die('<div class="alert alert-danger">'._("Invalid ID").'</div>'); }
+
 /* parse result */
 foreach($_POST as $k=>$p) {
 	if(substr($k, 0,4) == "user") {
@@ -19,7 +25,7 @@ foreach($_POST as $k=>$p) {
 
 
 /* verify that description is present if action != delete */
-if(strlen($_POST['gid'] == 0))	{ die("<div class='alert alert-error'>"._('Error - no group ID')."</div>"); }
+if(strlen($_POST['gid'] == 0))	{ die("<div class='alert alert alert-danger'>"._('Error - no group ID')."</div>"); }
 
 /* add each user to group */
 if(sizeof($users)>0) {
@@ -37,7 +43,7 @@ else {
 
 /* print result */
 if(isset($errors)) {
-	print "<div class='alert alert-error'>";
+	print "<div class='alert alert alert-danger'>";
 	print _("Failed to add users").":<hr>";
 	print "<ul>";
 	foreach($errors as $e) {

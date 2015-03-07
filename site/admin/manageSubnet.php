@@ -7,6 +7,16 @@
 /* verify that user is admin */
 if (!checkAdmin()) die('');
 
+
+/* get custom fields */
+$custom = getCustomFields('subnets');
+
+/* set hidden fields */
+$ffields = json_decode($settings['hiddenCustomFields'], true);		
+if(is_array($ffields['subnets']))	{ $ffields = $ffields['subnets']; }
+else								{ $ffields = array(); }
+
+
 /* print all sections with delete / edit button */
 print '<h4>'._('Subnet management').'</h4>' . "\n";
 print "<hr>";
@@ -22,19 +32,19 @@ $settings = getAllSettings();
 if(isset($_COOKIE['showSubnets'])) {
 	if($_COOKIE['showSubnets'] == 1) {
 		$display = "";
-		$icon    = "icon-resize-small";	
-		$iconchevron = "icon-chevron-down";
+		$icon    = "fa-compress";	
+		$iconchevron = "fa-angle-down";
 	}
 	else {
 		$display = "display:none";
-		$icon    = "icon-resize-full";	
-		$iconchevron = "icon-chevron-right";	
+		$icon    = "fa-expand";	
+		$iconchevron = "fa-angle-right";	
 	}
 }
 else {
 		$display = "display:none";
-		$icon    = "icon-resize-full";
-		$iconchevron = "icon-chevron-right";	
+		$icon    = "fa-expand";
+		$iconchevron = "fa-angle-right";	
 }
 
 
@@ -42,7 +52,7 @@ else {
 if(sizeof($sections) > 0) {
 
 	# expand / collapse
-	print "<button id='toggleAllSwitches' class='btn btn-small pull-right' rel='tooltip' data-placement='left' title='"._('click to show/hide all subnets')."'><i class='icon-gray $icon'></i></button>";
+	print "<button id='toggleAllSwitches' class='btn btn-sm btn-default pull-right' rel='tooltip' data-placement='left' title='"._('click to show/hide all subnets')."'><i class='fa $icon'></i></button>";
 	
 	# print  table structure
 	print "<table id='manageSubnets' class='table table-striped table-condensed table-top table-absolute'>";
@@ -55,12 +65,21 @@ if(sizeof($sections) > 0) {
 		# set colcount
 		if($settings['enableVRF'] == 1)		{ $colCount = "8"; }
 		else								{ $colCount = "7"; }
+
+		# just for count
+		if(sizeof($custom) > 0) {
+			foreach($custom as $field) {
+				if(!in_array($field['name'], $ffields)) {
+					$colCount++;
+				}
+			}
+		}
 		
 		# print name
 		print "<tbody id='subnet-$m'>";
 		print "<tr class='subnet-title'>";
 		print "	<th colspan='$colCount'>";
-		print "		<h4><button class='btn btn-small' id='subnet-$m' rel='tooltip' title='"._('click to show/hide belonging subnets')."'><i class='icon-gray $iconchevron'></i></button> $section[name] </h4>";
+		print "		<h4><button class='btn btn-xs btn-default' id='subnet-$m' rel='tooltip' title='"._('click to show/hide belonging subnets')."'><i class='fa $iconchevron'></i></button> $section[name] </h4>";
 		print "	</th>";
 		print "</tr>";
 		print "</tbody>";
@@ -75,25 +94,34 @@ if(sizeof($sections) > 0) {
 		print "<tr>";
 		print "	<th>"._('Subnet')."</th>";
 		print "	<th>"._('Description')."</th>";
-		print "	<th>"._('VLAN')."</th>";
+		print "	<th class='hidden-xs hidden-sm'>"._('VLAN')."</th>";
 		if($settings['enableVRF'] == 1) {
-		print "	<th>"._('VRF')."</th>";
+		print "	<th class='hidden-xs hidden-sm'>"._('VRF')."</th>";
 		}
-		print "	<th>"._('Requests')."</th>";
-		print "	<th>"._('Hosts check')."</th>";
-		print "	<th class='actions' style='width:140px;white-space:nowrap;'></th>";
+		print "	<th class='hidden-xs hidden-sm hidden-md'>"._('Requests')."</th>";
+		print "	<th class='hidden-xs hidden-sm hidden-md'>"._('Hosts check')."</th>";
+		# custom fields
+		if(sizeof($custom) > 0) {
+			foreach($custom as $field) {
+				if(!in_array($field['name'], $ffields)) {
+					print "	<th class='hidden-xs hidden-sm'>$field[name]</th>";
+				}
+			}
+		}
+
+		print "	<th class='actions'></th>";
 		print "</tr>";
 
 		# add new link
 		print "<tr>";
 		print "	<td colspan='$colCount'>";
-		print "		<button class='btn btn-small editSubnet' data-action='add' data-sectionid='$section[id]' rel='tooltip' data-placement='right' title='"._('Add new subnet to section')." $section[name]'><i class='icon-gray icon-plus'></i> "._('Add subnet')."</button>";
+		print "		<button class='btn btn-sm btn-default editSubnet' data-action='add' data-sectionid='$section[id]' rel='tooltip' data-placement='right' title='"._('Add new subnet to section')." $section[name]'><i class='fa fa-plus'></i> "._('Add subnet')."</button>";
 		print "	</td>";
 		print "	</tr>";
 
 		# no subnets
 		if(sizeof($subnets) == 0) {
-			print "<tr><td colspan='$colCount'><div class='alert alert-warn'>"._('Section has no subnets')."!</div></td></tr>";
+			print "<tr><td colspan='$colCount'><div class='alert alert-info'>"._('Section has no subnets')."!</div></td></tr>";
 		}	
 		else {
 			# subnets

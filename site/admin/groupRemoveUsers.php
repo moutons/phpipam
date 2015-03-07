@@ -13,6 +13,12 @@ checkAdmin();
 /* get all settings */
 $settings = getAllSettings();
 
+/* filter input */
+$_POST = filter_user_input($_POST, true, true, false);
+
+/* must be numeric */
+if(!is_numeric($_POST['g_id']))		{ die('<div class="alert alert-danger">'._("Invalid ID").'</div>'); }
+
 # get group details
 $group = getGroupById($_POST['g_id']);
 
@@ -72,10 +78,13 @@ $missing = getUsersInGroup($_POST['g_id']);
 
 <!-- footer -->
 <div class="pFooter">
-	<button class="btn btn-small hidePopups"><?php print _('Cancel'); ?></button>
-	<?php if(sizeof($missing) > 0) { ?>
-	<button class="btn btn-small btn-success" id="groupRemoveUsersSubmit"><i class="icon-white icon-ok"></i> <?php print _('Remove selected users'); ?></button>
-	<?php } ?>
+	<div class="btn-group">
+		<button class="btn btn-sm btn-default hidePopups"><?php print _('Cancel'); ?></button>
+		<?php if(sizeof($missing) > 0) { ?>
+		<button class="btn btn-sm btn-default btn-success" id="groupRemoveUsersSubmit"><i class="fa fa-minus"></i> <?php print _('Remove selected users'); ?></button>
+		<?php } ?>
+	</div>
+	
 	<!-- Result -->
 	<div class="groupRemoveUsersResult"></div>
 </div>

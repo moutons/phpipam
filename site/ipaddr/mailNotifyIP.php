@@ -19,9 +19,13 @@ $settings = getAllSettings();
 /* user details */
 $userDetails = getActiveUserDetails();
 
+/* filter input */
+$_POST = filter_user_input($_POST, true, true, false);
+/* must be numeric */
+if(!is_numeric($_POST['id']))		{ die('<div class="alert alert-danger">'._("Invalid ID").'</div>'); }
 
 /* get IP address id */
-$id = $_REQUEST['id'];
+$id = $_POST['id'];
 
 /* fetch all IP address details */
 $ip 	= getIpAddrDetailsById ($id);
@@ -49,9 +53,14 @@ $content .= '&bull; '._('Description').':' . "\t" . $ip['description'] . "\n";
 if(!empty($ip['dns_name'])) {
 $content .= '&bull; '._('Hostname').':' . "\t" 	 . $ip['dns_name'] . "\n";
 }
+# subnet
+$content .= '&bull; '._('Subnet').': ' . "\t" . transform2long($subnet['subnet'])."/".$subnet['mask'];
 # subnet desc
 if(!empty($subnet['description'])) {
-$content .= '&bull; '._('Subnet desc').': ' . "\t" . $subnet['description']. "\n";
+$content .= " (" . $subnet['description']. ")\n";
+}
+else {
+$content .= "\n";
 }
 # VLAN
 if(!empty($subnet['vlan'])) {
@@ -59,14 +68,24 @@ $content .= '&bull; '._('VLAN').': ' . "\t\t" 	 . $subnet['vlan'] . "\n";
 }
 # Switch
 if(!empty($ip['switch'])) {
-$content .= "&bull; "._('Switch').":\t\t"		 . $ip['switch'] . "\n";
+	# get device by id
+	$device = getDeviceDetailsById($ip['switch']);
+	$content .= "&bull; "._('Device').":\t\t"		 . $device['hostname'] . "\n";
 }
 # port
 if(!empty($ip['port'])) {
 $content .= "&bull; "._('Port').":\t"			 . $ip['port'] . "\n";
 }
+# port
+if(!empty($ip['mac'])) {
+$content .= "&bull; "._('Mac address').":\t"			 . $ip['mac'] . "\n";
+}
+# owner
+if(!empty($ip['owner'])) {
+$content .= '&bull; '._('Owner').':' . "\t" 	 . $ip['owner'] . "\n";
+}
 # custom
-$myFields = getCustomIPaddrFields();
+$myFields = getCustomFields('ipaddresses');
 if(sizeof($myFields) > 0) {
 	foreach($myFields as $myField) {
 		if(!empty($ip[$myField['name']])) {
@@ -88,14 +107,14 @@ if(sizeof($myFields) > 0) {
 
 	<!-- sendmail form -->
 	<form name="mailNotify" id="mailNotify">
-	<table id="mailNotify" class="table table-striped table-condensed">
+	<table id="mailNotify" class="table table-noborder table-condensed">
 
 	<!-- recipient -->
 	<tr>
 		<th><?php print _('Recipients'); ?></th>
 		<td>
-			<input type="text" name="recipients" style="width:400px;">
-			<i class="icon-gray icon-info-sign" rel="tooltip" data-placement="bottom" title="<?php print _('Separate multiple recepients with ,'); ?>"></i>
+			<input type="text" class='form-control input-sm pull-left' name="recipients" style="width:400px;margin-right:5px;">
+			<i class="fa fa-info input-append" rel="tooltip" data-placement="bottom" title="<?php print _('Separate multiple recepients with ,'); ?>"></i>
 		</td>
 	</tr>
 
@@ -103,7 +122,7 @@ if(sizeof($myFields) > 0) {
 	<tr>
 		<th><?php print _('Title'); ?></t>
 		<td>
-			<input type="text" name="subject" style="width:400px;" value="<?php print $title; ?>">
+			<input type="text" class='form-control input-sm' name="subject" style="width:400px;" value="<?php print $title; ?>">
 		</td>
 	</tr>
 	
@@ -111,7 +130,7 @@ if(sizeof($myFields) > 0) {
 	<tr>
 		<th><?php print _('Content'); ?></th>
 		<td style="padding-right:20px;">
-			<textarea name="content" rows="7" style="width:100%;"><?php print $content; ?></textarea>
+			<textarea name="content" class='form-control input-sm' rows="7" style="width:100%;"><?php print $content; ?></textarea>
 		</td>
 	</tr>
 
@@ -121,9 +140,11 @@ if(sizeof($myFields) > 0) {
 
 <!-- footer -->
 <div class="pFooter">
-	<button class="btn btn-small hidePopups"><?php print _('Cancel'); ?></button>
-	<button class="btn btn-small" id="mailIPAddressSubmit"><?php print _('Send Mail'); ?></button>
-
+	<div class="btn-group">
+		<button class="btn btn-sm btn-default hidePopups"><?php print _('Cancel'); ?></button>
+		<button class="btn btn-sm btn-default btn-success" id="mailIPAddressSubmit"><i class="fa fa-envelope-o"></i> <?php print _('Send Mail'); ?></button>
+	</div>
+	
 	<!-- holder for result -->
 	<div class="sendmail_check"></div>
 </div>

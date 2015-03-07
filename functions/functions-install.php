@@ -5,12 +5,13 @@
 #
 require( dirname(__FILE__) . '/../config.php' );
 require( dirname(__FILE__) . '/../functions/dbfunctions.php' );
+require( dirname(__FILE__) . '/../functions/version.php' );
 
 
 /**
  * php debugging on/off - ignore notices
  */
-if ($debugging == 0) {
+if ($debugging == false) {
   	ini_set('display_errors', 1);
     error_reporting(E_ERROR | E_WARNING);
 }
@@ -20,14 +21,55 @@ else{
 }
 
 
+
+/**
+ * create links function
+ *
+ *	if rewrite is enabled in settings use rewrite, otherwise ugly links
+ *
+ *	levels: page=$1&section=$2&subnetId=$3&sPage=$4&ipaddrid=$5
+ */
+if(!function_exists(create_link)) {
+function create_link($l1 = null, $l2 = null, $l3 = null, $l4 = null, $l5 = null, $install = false )
+{
+	# get settings
+	global $settings;
+	if(!isset($settings) && !$install) { $settings = getAllSettings(); }
+	
+	# set rewrite
+	if($settings['prettyLinks']=="Yes") {
+		if(!is_null($l5))		{ $link = "$l1/$l2/$l3/$l4/$l5/"; }
+		elseif(!is_null($l4))	{ $link = "$l1/$l2/$l3/$l4/"; }
+		elseif(!is_null($l3))	{ $link = "$l1/$l2/$l3/"; }
+		elseif(!is_null($l2))	{ $link = "$l1/$l2/"; }
+		elseif(!is_null($l1))	{ $link = "$l1/"; }
+		else					{ $link = ""; }
+	}
+	# normal
+	else {
+		if(!is_null($l5))		{ $link = "?page=$l1&section=$l2&subnetId=$l3&sPage=$l4&ipaddrid=$l5"; }
+		elseif(!is_null($l4))	{ $link = "?page=$l1&section=$l2&subnetId=$l3&sPage=$l4"; }
+		elseif(!is_null($l3))	{ $link = "?page=$l1&section=$l2&subnetId=$l3"; }
+		elseif(!is_null($l2))	{ $link = "?page=$l1&section=$l2"; }
+		elseif(!is_null($l1))	{ $link = "?page=$l1"; }
+		else					{ $link = ""; }
+	}
+	
+	# result
+	return $link;
+}
+}
+
+
+
+
 /**
  * Update log table
  */
 function updateLogTable ($command, $details = NULL, $severity = 0)
 {
-    global $db;                                                                      # get variables from config file
-    $database    = new database($db['host'], $db['user'], $db['pass']); 
-    
+    global $db;                                                                	
+	$database = new database($db['host'], $db['user'], $db['pass']);    
     
     /* select database */
     try {
@@ -54,7 +96,7 @@ function updateLogTable ($command, $details = NULL, $severity = 0)
 	    
 	    /* execute */
     	try {
-    		$database->executeMultipleQuerries($query);
+    		$database->executeQuery($query);
     	}
     	catch (Exception $e) {
     		$error =  $e->getMessage();
@@ -73,16 +115,20 @@ function updateLogTable ($command, $details = NULL, $severity = 0)
  */
 function getUserDetailsByName ($username)
 {
-    global $db;                                                                      # get variables from config file
-    /* set query, open db connection and fetch results */
-    $query    = 'select * from users where username LIKE BINARY "'. $username .'";';
-    $database = new database($db['host'], $db['user'], $db['pass'], $db['name']);  
+	global $database;
+	if(!is_object($database)) {
+		global $db;
+		$database = new database($db['host'], $db['user'], $db['pass'], $db['name']);
+	}
+		
+	/* set query, open db connection and fetch results */
+    $query    = 'select * from users where `username` LIKE BINARY "'. $username .'";';
 
     /* execute */
     try { $details = $database->getArray( $query ); }
     catch (Exception $e) { 
         $error =  $e->getMessage(); 
-        print ("<div class='alert alert-error'>"._('Error').": $error</div>");
+        print ("<div class='alert alert-danger'>"._('Error').": $error</div>");
         return false;
     } 
     
@@ -99,7 +145,6 @@ function getUserDetailsByName ($username)
  */
 function getActiveUserDetails ()
 {
-/*     session_start(); */
 	if(isset($_SESSION['ipamusername'])) {
     	return getUserDetailsByName ($_SESSION['ipamusername']);
     }
@@ -115,16 +160,16 @@ function getActiveUserDetails ()
  */
 function getUserLang ($username)
 {
-    global $db;                                                                      # get variables from config file
+    global $db;
+    $database = new database($db['host'], $db['user'], $db['pass'], $db['name']);                                                                      
     /* set query, open db connection and fetch results */
     $query    = 'select `lang`,`l_id`,`l_code`,`l_name` from `users` as `u`,`lang` as `l` where `l_id` = `lang` and `username` = "'.$username.'";;';
-    $database = new database($db['host'], $db['user'], $db['pass'], $db['name']);  
 
     /* execute */
     try { $details = $database->getArray( $query ); }
     catch (Exception $e) { 
         $error =  $e->getMessage(); 
-        print ("<div class='alert alert-error'>"._('Error').": $error</div>");
+        print ("<div class='alert alert-danger'>"._('Error').": $error</div>");
         return false;
     } 
     
@@ -138,16 +183,16 @@ function getUserLang ($username)
  */
 function getLangById ($id)
 {
-    global $db;                                                                      # get variables from config file
+    global $db;
+    $database = new database($db['host'], $db['user'], $db['pass'], $db['name']);                                                                      
     /* set query, open db connection and fetch results */
     $query    = 'select * from `lang` where `l_id` = "'.$id.'";';
-    $database = new database($db['host'], $db['user'], $db['pass'], $db['name']);  
 
     /* execute */
     try { $details = $database->getArray( $query ); }
     catch (Exception $e) { 
         $error =  $e->getMessage(); 
-        print ("<div class='alert alert-error'>"._('Error').": $error</div>");
+        print ("<div class='alert alert-danger'>"._('Error').": $error</div>");
         return false;
     } 
     
@@ -161,9 +206,8 @@ function getLangById ($id)
  */
 function getAllSettings()
 {
-    global $db;                                                                      # get variables from config file
-    $database    = new database($db['host'], $db['user'], $db['pass']); 
-
+    global $db;                                                                      
+	$database = new database($db['host'], $db['user'], $db['pass'], $db['name']);
     /* Check connection */
     if ($database->connect_error) {
     	die('Connect Error (' . $database->connect_errno . '): '. $database->connect_error);
@@ -176,7 +220,7 @@ function getAllSettings()
     try { $count = $database->getArray( $query ); }
     catch (Exception $e) { 
         $error =  $e->getMessage(); 
-        print ("<div class='alert alert-error'>"._('Error').": $error</div>");
+        print ("<div class='alert alert-danger'>"._('Error').": $error</div>");
         return false;
     } 
   
@@ -193,7 +237,7 @@ function getAllSettings()
 	    try { $settings = $database->getArray( $query ); }
 	    catch (Exception $e) { 
         	$error =  $e->getMessage(); 
-        	print ("<div class='alert alert-error'>"._('Error').": $error</div>");
+        	print ("<div class='alert alert-danger'>"._('Error').": $error</div>");
         	return false;
         }   
 		/* return settings */
@@ -210,9 +254,9 @@ function getAllSettings()
  */
 function getADSettings()
 {
-    global $db;                                                                      # get variables from config file
-    $database    = new database($db['host'], $db['user'], $db['pass']); 
-
+    global $db;                                                                      
+	$database = new database($db['host'], $db['user'], $db['pass'], $db['name']);
+    
     /* Check connection */
     if ($database->connect_error) {
     	die('Connect Error (' . $database->connect_errno . '): '. $database->connect_error);
@@ -225,7 +269,7 @@ function getADSettings()
     try { $count = $database->getArray( $query ); }
     catch (Exception $e) { 
         $error =  $e->getMessage(); 
-        print ("<div class='alert alert-error'>"._('Error').": $error</div>");
+        print ("<div class='alert alert-danger'>"._('Error').": $error</div>");
         return false;
     }  
   
@@ -242,7 +286,7 @@ function getADSettings()
 	    try { $settings = $database->getArray( $query ); }
 	    catch (Exception $e) { 
         	$error =  $e->getMessage(); 
-        	print ("<div class='alert alert-error'>"._('Error').": $error</div>");
+        	print ("<div class='alert alert-danger'>"._('Error').": $error</div>");
         	return false;
         } 
 	    
@@ -260,134 +304,202 @@ function getADSettings()
 }
 
 
-
 /**
  * Login authentication
  *
  * First we try to authenticate via local database
  * if it fails we querry the AD, if set in config file
  */
-// <eNovance>
-// This method has been modified to keep proceeding with the authentication even if a user is
-// not in the ipam database. See the checkAdLogin method for more details
 function checkLogin ($username, $md5password, $rawpassword) 
 {
-    global $db;                                                                      # get variables from config file
+    global $db;
     
-    /* check if user exists in local database */
-    $database 	= new database($db['host'], $db['user'], $db['pass'], $db['name']);
-    $query 		= 'select * from `users` where `username` = binary "'. $username .'" and `password` = BINARY "'. $md5password .'" and `domainUser` = "0" limit 1;';
+    # set failed flag to update authFailed table
+    $authFailed = true;
+    $updatepass = false;
+    $uerror		= "";
+    $lerror		= "";
+
+    # fetch settings to get auth types
+    $settings = getAllSettings(); 
+    
+    # for login check
+    $database = new database($db['host'], $db['user'], $db['pass'], $db['name']);
+    
+	# escape vars to prevent SQL injection
+	$username 	 = $database->real_escape_string($username);
+
+    # try to fetch user
+    $query 		= 'select * from `users` where `username` = "'. $username .'" limit 1;';
 
     /* execute */
     try { $result = $database->getArray( $query ); }
     catch (Exception $e) { 
         $error =  $e->getMessage(); 
-        print ("<div class='alert alert-error'>"._('Error').": $error</div>");
+        print ("<div class='alert alert-danger'>"._('Error').": $error</div>");
         return false;
     } 
-
-    /* close database connection */
-    $database->close();
     
-   	/* locally registered */
-    if (sizeof($result) !=0 ) 	{ 
+   	# verify type and password
+    if (sizeof($result)>0) 	{
+    	# reset var
+    	$user = $result[0];
+    
+    	/**
+    	 * local auth
+    	 */
+    	if($user['domainUser']=="0") {
+			# try crypt
+			if(substr($user['password'], 0,1)=="$") {
+				if($user['password']==crypt($rawpassword, $user['password'])) 	{ $authFailed = false; }
+			}
+			else {
+		    	if($user['password']==$md5password) 							{ $authFailed = false; $updatepass = true; }	//second md5 - standard, update passwords!
+				else															{ $authFailed = true; }							//no math, fail				
+			}
+			
+			# ok
+			if($authFailed == false) {
+			
+				# try to update pass to crypt, only if version already changed
+				if($updatepass && $settings['version']=="1.1") { update_user_pass_to_crypt($username, $rawpassword); }
+		    	
+		    	# save results
+		    	$uerror = 'Login successful';	
+		    	$lerror = 'User '.$user['real_name'].' logged in.'; 
+			}
+			# fail
+			else {
+				$uerror = 'Failed to log in';	
+		    	$lerror = 'User '.$username.' failed to log in.';
+			}	    	
+    	}
+    	/**
+    	 *	AD Domain auth
+    	 */
+    	elseif($settings['domainAuth']== "1" && $user['domainUser']=="1") {
 
-    	# get user lang
-    	$lang = getLangById ($result[0]['lang']);
-    	
-    	/* start session and set variables */
-    	session_start();
-    	$_SESSION['ipamusername'] = $username;
-    	$_SESSION['ipamlanguage'] = $lang['l_code'];
-    	session_write_close();
-    	
-    	# print success
-    	print('<div class="alert alert-success">'._('Login successful').'!</div>');	
-    	# write log file
-    	updateLogTable ('User '. $username .' logged in.', "", 0); 
-    }
-    /* locally failed, try domain */
-    else {
-    	/* fetch settings */
-    	$settings = getAllSettings();  
-    	
-    	/* if local failed and AD/OpenLDAP is selected try to authenticate */
-    	if ( $settings['domainAuth'] != "0") {
-    		
-			/* check if user exist in database and has domain user flag */		
+			# try to authenticate against AD		
 			$authAD = checkADLogin ($username, $rawpassword);
 	
+			/**
+			 *	AD auth suceeded
+			 */
 			if($authAD == "ok") {
-				# get user lang
-				$lang = getLangById ($result[0]['lang']);
-
-	    		/* start session and set variables */
-	    		session_start();
-	    		$_SESSION['ipamusername'] = $username;
-	    		$_SESSION['ipamlanguage'] = $lang['l_code'];
-	    		session_write_close();
-	    		
-	    		# print success
-	    		if($settings['domainAuth'] == "1") {
-		   			print('<div class="alert alert-success">'._('AD login successful').'!</div>');	
-		   			updateLogTable ('User '. $username .' logged in.', "", 0); 	
-		   		}
-		   		else {
-		   			print('<div class="alert alert-success">'._('LDAP login successful').'!</div>');	
-		   			updateLogTable ('User '. $username .' logged in.', "", 0); 			    	
-		   		}
-		   	}
-		   	# failed to connect
-		   	else if ($authAD == 'Failed to connect to AD!') {
-				# print error
-				if($settings['domainAuth'] == "1") {
-				    print('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">×</button>'._('Failed to connect to AD server').'!</div>');	
-				    updateLogTable ('Failed to connect to AD!', "", 2); 	
-				}
-				else {
-			    	print('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">×</button>'._('Failed to connect to LDAP server').'!</div>');	
-			    	updateLogTable ('Failed to connect to LDAP!', "", 2); 						
-			    }
+				# set flag
+				$authFailed = false;
+    			
+		    	# save results
+		    	$uerror = 'AD Login successful';	
+		    	$lerror = 'User '.$user['real_name'].' logged in.'; 
+	    	}
+	    	# failed to connect
+	    	else if ($authAD == 'Failed to connect to AD!') {
+				$uerror = 'Failed to connect to AD server';	
+				$lerror = 'Failed to connect to AD!'; 	
 			}
 			# failed to authenticate
 			else if ($authAD == 'Failed to authenticate user via AD!') {
-				# print error
-				if($settings['domainAuth'] == "1") {
-				    print('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">×</button>'._('Failed to authenticate user against AD').'!</div>');	
-				    updateLogTable ('User '. $username .' failed to authenticate against AD.', "", 2); 	
-				}
-				else {
-			    	print('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">×</button>'._('Failed to authenticate user against LDAP').'!</div>');	
-			    	updateLogTable ('User '. $username .' failed to authenticate against LDAP.', "", 2); 					
-			    }
+			    $uerror = 'Failed to authenticate user against AD';	
+			    $lerror = 'User failed to authenticate against AD.'; 	
 			}
 			# wrong user/pass
 			else {
-				# print error
-				if($settings['domainAuth'] == "1") {
-				    print('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">×</button>'._('Wrong username or password').'!</div>');
-				    updateLogTable ('User '. $username .' failed to authenticate against AD.', "", 2); 
-				}
-				else {
-			    	print('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">×</button>'._('Wrong username or password').'!</div>');
-			    	updateLogTable ('User '. $username .' failed to authenticate against LDAP.', "", 2); 					
-			    }
+			    $uerror = 'Wrong username or password';
+			    $lerror = 'User failed to authenticate against AD.'; 
 			}
     	}
-    	/* only local set, print error! */
+    	/**
+    	 *	LDAP auth
+    	 */
+    	elseif($settings['domainAuth']== "2" && $user['domainUser']=="1") {
+
+			# try to authenticate against AD		
+			$authAD = checkADLogin ($username, $rawpassword);
+	
+			/**
+			 *	AD auth suceeded
+			 */
+			if($authAD == "ok") {
+				# set flag
+				$authFailed = false;
+    			
+		    	# save results
+		    	$uerror = 'LDAP Login successful';	
+		    	$lerror = 'User '.$user['real_name'].' logged in.'; 
+	    	}
+	    	# failed to connect
+	    	else if ($authAD == 'Failed to connect to AD!') {
+				$uerror = 'Failed to connect to LDAP server';	
+				$lerror = 'Failed to connect to LDAP!'; 	
+			}
+			# failed to authenticate
+			else if ($authAD == 'Failed to authenticate user via AD!') {
+			    $uerror = 'Failed to authenticate user against LDAP';	
+			    $lerror = 'User failed to authenticate against LDAP.'; 	
+			}
+			# wrong user/pass
+			else {
+			    $uerror = 'Wrong username or password';
+			    $lerror = 'User failed to authenticate against LDAP.'; 
+			}
+    	}
+    	/**
+    	 *	Username ok, but no password match in local database, other not configured
+    	 */
     	else {
-    		# print error
-			print('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">×</button>'._('Failed to log in').'!</div>');	
-			# write log file
-	    	updateLogTable ('User '. $username .' failed to log in.', "", 2);
-    	}   
+			$uerror = 'Failed to log in';	
+	    	$lerror = 'User '.$username.' failed to log in.';
+    	}
     }
+	# fail - no username match
+	else {
+		$uerror = 'Failed to log in';	
+    	$lerror = 'User '.$username.' failed to log in.';
+	}
+	
+	
+	/**
+	 * print errors
+	 */
+	if($authFailed == true) {
+    	# print success
+	    print('<div class="alert alert-danger"><button type="button" class="close" data-dismiss="alert">×</button>'._($uerror).'!</div>');
+    	# write log file
+	    updateLogTable ($lerror, "", 2); 
+	    
+	    # also update blocked IP table
+		if(isset($_SERVER['HTTP_X_FORWARDED_FOR']))	{ $ip = $_SERVER['HTTP_X_FORWARDED_FOR']; }
+		else										{ $ip = $_SERVER['REMOTE_ADDR']; }
+		# add block count
+		block_ip ($ip);	    
+	}
+	/**
+	 * print success
+	 */
+	else {
+		# get user lang
+		$lang = getLangById ($user['lang']);
+
+		/* start session and set variables */
+		global $phpsessname; 
+		if(strlen($phpsessname)>0) { session_name($phpsessname); }  
+		session_start();
+		$_SESSION['ipamusername'] = $username;
+		$_SESSION['ipamlanguage'] = $lang['l_code'];
+		$_SESSION['lastactive']   = time();
+		session_write_close();
+    			
+    	# print success
+    	print('<div class="alert alert-success">'._($uerror).'!</div>');	
+    	# write log file
+    	updateLogTable ($lerror, "", 0); 		
+	}
 }
 
 
-// <eNovance>
-// The follow method has been modified to add a user into the ipam database if he's
-// not already registered but manage to authenticate with LDAP
+
+
 /**
  * Check user against AD
  */
@@ -396,69 +508,38 @@ function checkADLogin ($username, $password)
     /* get All settings */
     $settings = getAllSettings();
     
-	//include login script
+	# include login script
 	include (dirname(__FILE__) . "/adLDAP/src/adLDAP.php");
-	
-	//open connection
-	try 
-	{
-		//get settings for connection
+
+	# open connection
+	try {
+		# get settings for connection
 		$ad = getADSettings();
-			
-		//AD
-	   	$adldap = new adLDAP(array( 'base_dn'=>$ad['base_dn'], 'account_suffix'=>$ad['account_suffix'], 
-	   								'domain_controllers'=>$ad['domain_controllers'], 'use_ssl'=>$ad['use_ssl'],
-	   								'use_tls'=> $ad['use_tls'], 'ad_port'=> $ad['ad_port']
-	   								));
-	    	
-	   	// set OpenLDAP flag
-	   	if($settings['domainAuth'] == "2") { $adldap->setUseOpenLDAP(true); }
-	    	
-	}
-	catch (adLDAPException $e) 
-	{
-		die('<div class="alert alert-error">'. $e .'</div>');
-	}
-
-	//user authentication
-	$authUser = $adldap->authenticate($username, $password);
 		
-	if($authUser == true) 
-	{
-		global $db;
-		$database = new database($db['host'], $db['user'], $db['pass'], $db['name']);
-		$query = "SELECT id FROM users WHERE username = '$username';";
-		$user_id = $database->getRow($query);
-
-		if (count($user_id) == 0)
-		{
-			$real_name = str_replace('.', ' ', $username);
-			$real_name = ucwords($real_name);
-			$email = $username."@enovance.com";
-
-			$query = "INSERT INTO users (username, role, real_name, email, domainUser, lang) VALUES ('$username', 'Administrator', '$real_name', '$email', 1, 1);";
-			$database->executeQuery($query);
-			$user_id = $database->insert_id;
-			if (count($user_id) > 0) {updateLogTable ('Created user '.$username.' successfully', "", 0);}
-		}
-
-		$database->close();
-
-		if (count($user_id) > 0)
-		{
-			updateLogTable ('User '. $username .' authenticated against AD.', "", 0);
-			return 'ok'; 
-		}
-		else
-		{
-			updateLogTable ('Failed to create user .'. $username, "", 2);
-			return "Failed to creater user $username";
-		}
+		# AD
+    	$adldap = new adLDAP(array( 'base_dn'=>$ad['base_dn'], 'account_suffix'=>$ad['account_suffix'], 
+    								'domain_controllers'=>$ad['domain_controllers'], 'use_ssl'=>$ad['use_ssl'],
+    								'use_tls'=> $ad['use_tls'], 'ad_port'=> $ad['ad_port']
+    								));
+    	
+    	# set OpenLDAP flag
+    	if($settings['domainAuth'] == "2") { $adldap->setUseOpenLDAP(true); }
+    	
 	}
-	else 
-	{ 
-		updateLogTable ('User '. $username .' failed to authenticate against AD.', "", 2);
+	catch (adLDAPException $e) {
+		die('<div class="alert alert-danger">'. $e .'</div>');
+	}
+
+	# user authentication
+	$authUser = $adldap->authenticate($username, $password);
+	
+	# result
+	if($authUser == true) { 
+		return 'ok'; 
+	}
+	else { 
 		$err = $adldap->getLastError();
+		print "<div class='alert alert-danger'>$err</div>";
 		return 'Failed to authenticate user via AD!'; 
 	}
 }
@@ -469,27 +550,25 @@ function checkADLogin ($username, $password)
  */
 function checkAdmin ($die = true) 
 {
-    global $db;                                                                      # get variables from config file
+	global $database;   
     
     /* first get active username */
+    global $phpsessname; 
+    if(strlen($phpsessname)>0) { session_name($phpsessname); }  
     session_start();
     $ipamusername = $_SESSION['ipamusername'];
     session_write_close();
     
     /* set check query and get result */
-    $database = new database ($db['host'], $db['user'], $db['pass'], $db['name']);
     $query = 'select role from users where username = "'. $ipamusername .'";';
     
     /* execute */
     try { $role = $database->getRow( $query ); }
     catch (Exception $e) { 
         $error =  $e->getMessage(); 
-        print ("<div class='alert alert-error'>"._('Error').": $error</div>");
+        print ("<div class='alert alert-danger'>"._('Error').": $error</div>");
         return false;
     } 
-
-    /* close database connection */
-    $database->close();
     
     /* return true if admin, else false */
     if ($role[0] == "Administrator") {
@@ -497,13 +576,192 @@ function checkAdmin ($die = true)
     }
     else {
     	//die
-    	if($die == true) { die('<div class="alert alert-error">'._('Administrator level privileges are required to access this site').'!</div>'); }
+    	if($die == true) { die('<div class="alert alert-danger">'._('Administrator level privileges are required to access this site').'!</div>'); }
     	//return false if called
     	else 			 { return false; }
     	//update log
     	updateLogTable ('User '. $ipamusername .' tried to access admin page.', "", 2);
     }      
 }
+
+
+
+
+
+/* @crypt functions */
+if(!function_exists(crypt_user_pass))
+{
+/**
+ *	function to crypt user pass, randomly generates salt. Use sha256 if possible, otherwise Blowfish or md5 as fallback
+ *
+ *		types:	
+ *			CRYPT_MD5 == 1   		(Salt starting with $1$, 12 characters )
+ *			CRYPT_BLOWFISH == 1		(Salt starting with $2a$. The two digit cost parameter: 09. 22 characters )
+ *			CRYPT_SHA256 == 1		(Salt starting with $5$rounds=5000$, 16 character salt.)
+ *			CRYPT_SHA512 == 1		(Salt starting with $6$rounds=5000$, 16 character salt.)
+ *
+ */
+function crypt_user_pass($input)
+{
+	# initialize salt
+	$salt = "";
+	# set possible salt characters in array
+	$salt_chars = array_merge(range('A','Z'), range('a','z'), range(0,9));
+	# loop to create salt
+	for($i=0; $i < 22; $i++) { $salt .= $salt_chars[array_rand($salt_chars)]; }
+	# get prefix
+	$prefix = detect_crypt_type();
+	# return crypted variable
+	return crypt($input, $prefix.$salt);
+}
+
+/**
+ *	this function will detect highest crypt type to use for system
+ */
+function detect_crypt_type () 
+{
+	if(CRYPT_SHA512 == 1)		{ return '$6$rounds=3000$'; }
+	elseif(CRYPT_SHA512 == 1)	{ return '$5$rounds=3000$'; }
+	elseif(CRYPT_BLOWFISH == 1)	{ return '$2y$'; }
+	elseif(CRYPT_MD5 == 1)		{ return '$5$rounds=3000$'; }
+	else						{ die("<div class='alert alert-danger'>No crypt types supported!</div>"); }
+}
+
+/**
+ * update users pass from md5 to crypt
+ */
+function update_user_pass_to_crypt($username, $rawpassword) 
+{
+   	global $db;                                                                      
+    $database = new database($db['host'], $db['user'], $db['pass'], $db['name']);
+    
+    # crypt pass
+    $password = crypt_user_pass($rawpassword);
+	$password = $database->real_escape_string($password);
+    
+    # set check query and get result
+    $query = "update `users` set `password`='$password' where `username` = '$username';";
+    
+    # execute
+    try { $database->executeQuery( $query ); }
+    catch (Exception $e) { 
+    	print "<div class='alert alert-danger'>".$e->getMessage()."</div>";
+        return false;
+    }
+	return true;
+}
+
+}
+
+
+
+/* @block IP address from login for 5 minutes ----------- */
+
+/**
+ *	add/update entry
+ */
+function block_ip ($ip) 
+{
+	# first check if already in
+	if(check_blocked_ip ($ip)) {
+		# update
+		update_blocked_count($ip);
+	}
+	# if not in add first entry
+	else {
+		add_blocked_entry($ip);
+	}
+	return true;
+}
+
+
+/**
+ *	check
+ */
+function check_blocked_ip ($ip) 
+{
+	# first purge
+	purge_blocked_entries();
+	
+    global $db;                                                                      
+    $database = new database($db['host'], $db['user'], $db['pass'], $db['name']);
+	# set date
+	$now = date("Y-m-d H:i:s", time() - 5*60);
+    
+    # set check query and get result
+    $query = "select * from `loginAttempts` where `ip` = '$ip' and `datetime` > '$now';";
+    
+    # execute
+    try { $ips = $database->getArray( $query ); }
+    catch (Exception $e) { 
+        return false;
+    }
+    
+    # verify
+    if(sizeof($ips[0])>0)	{ return $ips[0]['count']; }
+    else					{ return false; }
+}
+
+/**
+ *	add block count
+ */
+function update_blocked_count($ip)
+{
+    global $db;                                                                      
+    $database = new database($db['host'], $db['user'], $db['pass'], $db['name']);
+	# query
+	$query = "update `loginAttempts` set `count`=`count`+1 where `ip` = '$ip'; ";
+
+    # execute
+    try { $database->executeQuery( $query ); }
+    catch (Exception $e) {}
+    # return
+    return true;
+}
+
+/**
+ *	add new block entry
+ */
+function add_blocked_entry($ip)
+{
+    global $db;                                                                      
+    $database = new database($db['host'], $db['user'], $db['pass'], $db['name']); 
+	# query
+	$query = "insert into `loginAttempts` (`ip`,`count`) values ('$ip',1); ";
+
+    # execute
+    try { $database->executeQuery( $query ); }
+    catch (Exception $e) {
+	    	print $e->getMessage();
+    }
+    # return
+    return true;
+}
+ 
+/**
+ *	purge records
+ */
+function purge_blocked_entries()
+{
+    global $db;                                                                      
+    $database = new database($db['host'], $db['user'], $db['pass'], $db['name']);
+	# set date
+	$now = date("Y-m-d H:i:s", time() - 5*60);
+	# query
+	$query = "delete from `loginAttempts` where `datetime` < '$now'; ";
+
+    # execute
+    try { $database->executeQuery( $query ); }
+    catch (Exception $e) {}
+    # return
+    return true;
+}
+
+
+
+
+
+
 
 
 /*********************************
@@ -516,8 +774,8 @@ function checkAdmin ($die = true)
  */
 function getAllTables()
 {
-    global $db;                                                                      # get variables from config file
-    $database    = new database($db['host'], $db['user'], $db['pass'], $db['name']); 
+    global $db;                                                                      
+    $database = new database($db['host'], $db['user'], $db['pass'], $db['name']);
     
     /* first update request */
     $query    = 'show tables;';
@@ -526,7 +784,7 @@ function getAllTables()
     try { $tables = $database->getArray( $query ); }
     catch (Exception $e) { 
         $error =  $e->getMessage(); 
-        print ("<div class='alert alert-error'>"._('Error').": $error</div>");
+        print ("<div class='alert alert-danger'>"._('Error').": $error</div>");
         return false;
     } 
   
@@ -538,14 +796,15 @@ function getAllTables()
 /**
  * Check if specified table exists
  */
-function tableExists($table)
+function tableExists($table, $die = true)
 {
-    global $db;                                                                      # get variables from config file
-    $database    = new database($db['host'], $db['user'], $db['pass']); 
+	global $db;
+	$database = new database($db['host'], $db['user'], $db['pass'], $db['name'], null, false); 
 
     /* Check connection */
     if ($database->connect_error) {
-    	die('Connect Error (' . $database->connect_errno . '): '. $database->connect_error);
+    	if($die) { die('Connect Error (' . $database->connect_errno . '): '. $database->connect_error); }
+    	else	 { return false; }
 	}
     
     /* first update request */
@@ -555,7 +814,7 @@ function tableExists($table)
     try { $count = $database->getArray( $query ); }
     catch (Exception $e) { 
         $error =  $e->getMessage(); 
-        print ("<div class='alert alert-error'>"._('Error').": $error</div>");
+        print ("<div class='alert alert-danger'>"._('Error').": $error</div>");
         return false;
     } 
   
@@ -570,9 +829,8 @@ function tableExists($table)
  */
 function fieldExists($table, $fieldName)
 {
-    global $db;                                                                      # get variables from config file
-    $database    = new database($db['host'], $db['user'], $db['pass'], $db['name']); 
-    
+    global $db;                                                                      
+    $database = new database($db['host'], $db['user'], $db['pass'], $db['name']);
     /* first update request */
     $query    = 'describe `'. $table .'` `'. $fieldName .'`;';
 
@@ -580,7 +838,7 @@ function fieldExists($table, $fieldName)
     try { $count = $database->getArray( $query ); }
     catch (Exception $e) { 
         $error =  $e->getMessage(); 
-        print ("<div class='alert alert-error'>"._('Error').": $error</div>");
+        print ("<div class='alert alert-danger'>"._('Error').": $error</div>");
         return false;
     } 
   
@@ -593,45 +851,67 @@ function fieldExists($table, $fieldName)
 /**
  * install databases
  */
-function installDatabase($root)
-{
-    global $db;                                                                      # get variables from config file
-    $databaseRoot    = new database($db['host'], $root['user'], $root['pass']); 
+function installDatabase($rootuser, $rootpass, $dropdb = false, $createdb = true, $creategrants = true)
+{    
+	global $db;
+    error_reporting(E_ERROR); 
+    
+    # open connection
+    $databaseRoot    = new database($db['host'], $rootuser, $rootpass, null, null, false); 
     
     /* Check connection */
     if ($databaseRoot->connect_error) {
-    	die('<div class="alert alert-error">Connect Error (' . $databaseRoot->connect_errno . '): '. $databaseRoot->connect_error). "</div>";
+    	die('<div class="alert alert-danger">Connect Error (' . $databaseRoot->connect_errno . '): '. $databaseRoot->connect_error). "</div>";
 	}
-    
- 	/* first create database */
-    $query = "create database ". $db['name'] .";";
 
-    /* execute */
-    try {
-    	$databaseRoot->executeQuery( $query );
-    }
-    catch (Exception $e) {
-    	$error =  $e->getMessage();
-    	die('<div class="alert alert-error">'. $error .'</div>');
-	} 
+ 	/* first drop database if requested */
+ 	if($dropdb) {
+	    $query = "drop database ". $db['name'] .";";
+	
+	    /* execute */
+	    try {
+	    	$databaseRoot->executeQuery( $query );
+	    }
+	    catch (Exception $e) {
+	    	$error =  $e->getMessage();
+	    	die('<div class="alert alert-danger">'. $error .'</div>');
+		} 
+	}
+
+    
+ 	/* first create database if requested */
+ 	if($createdb) {
+	    $query = "create database ". $db['name'] .";";
+	
+	    /* execute */
+	    try {
+	    	$databaseRoot->executeQuery( $query );
+	    }
+	    catch (Exception $e) {
+	    	$error =  $e->getMessage();
+	    	die('<div class="alert alert-danger">'. $error .'</div>');
+		} 
+	}
     
     /* select database */
 	$databaseRoot->selectDatabase($db['name']);
 
 	/* set permissions! */
-	$query = 'grant ALL on '. $db['name'] .'.* to '. $db['user'] .'@localhost identified by "'. $db['pass'] .'";';
-
-    /* execute */
-    try {
-    	$databaseRoot->executeMultipleQuerries( $query );
-    }
-    catch (Exception $e) {
-    	$error =  $e->getMessage();
-    	die('<div class="alert alert-error">Cannot set permissions for user '. $db['user'] .': '. $error. '</div>');
+	if($creategrants) {
+		$query = 'grant ALL on '. $db['name'] .'.* to '. $db['user'] .'@localhost identified by "'. $db['pass'] .'";';
+	
+	    /* execute */
+	    try {
+	    	$databaseRoot->executeQuery( $query );
+	    }
+	    catch (Exception $e) {
+	    	$error =  $e->getMessage();
+	    	die('<div class="alert alert-danger">Cannot set permissions for user '. $db['user'] .': '. $error. '</div>');
+		}
 	}
     
     /* try importing SCHEMA file */
-    $query       = file_get_contents("../../db/SCHEMA.sql");
+    $query  = file_get_contents("../../db/SCHEMA.sql");
     
     /* execute */
     try {
@@ -639,12 +919,22 @@ function installDatabase($root)
     }
     catch (Exception $e) {
     	$error =  $e->getMessage();
-    	die('<div class="alert alert-error">Cannot install sql SCHEMA file: '. $error. '</div>');
+    	
+    	# drop database!
+ 	    $query = "UNLOCK TABLES; drop database ". $db['name'] .";";
+	    try { $databaseRoot->executeMultipleQuerries( $query ); }
+	    catch (Exception $e) {
+	    	$error =  $e->getMessage();
+	    	die('<div class="alert alert-danger">Cannot set permissions for user '. $db['user'] .': '. $error. '</div>');
+	    } 
+    	
+    	print ('<div class="alert alert-danger">Cannot install sql SCHEMA file: '. $error. '</div>');
+    	return false;
 	}
 	    
     /* return true, if some errors occured script already died! */
     sleep(1);
-   	updateLogTable ('Database installed successfully!', "version ".VERSION." installed", 1);
+   	updateLogTable ('Database installed successfully!', "version ".VERSION.".".REVISION." installed", 1);
    	return true;
 }
 
