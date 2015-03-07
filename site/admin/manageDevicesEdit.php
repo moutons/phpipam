@@ -10,14 +10,33 @@ require_once('../../functions/functions.php');
 /* verify that user is admin */
 if (!checkAdmin()) die('');
 
+/* prevent XSS in action */
+$_POST['action'] = filter_user_input ($_POST['action'], false, true, true);
+/* escape vars to prevent SQL injection */
+$_POST = filter_user_input ($_POST, true, true);
+
+/* get custom fields */
+$custom = getCustomFields('devices');
+
+/* must be numeric */
+if($_POST['action']!="add") {
+	if(!is_numeric($_POST['switchId']))		{ die('<div class="alert alert-danger">'._("Invalid ID").'</div>'); }
+}
+
 /* get switch detaild by Id! */
 if( ($_POST['action'] == "edit") || ($_POST['action'] == "delete") ) {
-	$switch = getSwitchDetailsById($_POST['switchId']);
+	$device = getDeviceDetailsById($_POST['switchId']);
 }
 
 if ($_POST['action'] == "delete") 	{ $readonly = "readonly"; }
 else 								{ $readonly = ""; }
 ?>
+
+<script type="text/javascript">
+$(document).ready(function(){
+     if ($("[rel=tooltip]").length) { $("[rel=tooltip]").tooltip(); }
+});
+</script>
 
 
 <!-- header -->
@@ -34,7 +53,7 @@ else 								{ $readonly = ""; }
 	<tr>
 		<td><?php print _('Hostname'); ?></td>
 		<td>
-			<input type="text" name="hostname" placeholder="<?php print _('Hostname'); ?>" value="<?php if(isset($switch['hostname'])) print $switch['hostname']; ?>" <?php print $readonly; ?>>
+			<input type="text" name="hostname" class="form-control input-sm" placeholder="<?php print _('Hostname'); ?>" value="<?php if(isset($device['hostname'])) print $device['hostname']; ?>" <?php print $readonly; ?>>
 		</td>
 	</tr>
 
@@ -42,7 +61,7 @@ else 								{ $readonly = ""; }
 	<tr>
 		<td><?php print _('IP address'); ?></td>
 		<td>
-			<input type="text" name="ip_addr" placeholder="<?php print _('IP address'); ?>" value="<?php if(isset($switch['ip_addr'])) print $switch['ip_addr']; ?>" <?php print $readonly; ?>>
+			<input type="text" name="ip_addr" class="form-control input-sm" placeholder="<?php print _('IP address'); ?>" value="<?php if(isset($device['ip_addr'])) print $device['ip_addr']; ?>" <?php print $readonly; ?>>
 		</td>
 	</tr>
 
@@ -50,11 +69,11 @@ else 								{ $readonly = ""; }
 	<tr>
 		<td><?php print _('Device type'); ?></td>
 		<td>
-			<select name="type">
+			<select name="type" class="form-control input-sm input-w-auto">
 			<?php
-			$types = getSwitchTypes();
+			$types = getDeviceTypes();
 			foreach($types as $key=>$name) {
-				if($switch['type'] == $key)	{ print "<option value='$key' selected='selected'>$name</option>"; }
+				if($device['type'] == $key)	{ print "<option value='$key' selected='selected'>$name</option>"; }
 				else						{ print "<option value='$key' >$name</option>"; }
 			}
 			?>
@@ -66,7 +85,7 @@ else 								{ $readonly = ""; }
 	<tr>
 		<td><?php print _('Vendor'); ?></td>
 		<td>
-			<input type="text" name="vendor" placeholder="<?php print _('Vendor'); ?>" value="<?php if(isset($switch['vendor'])) print $switch['vendor']; ?>" <?php print $readonly; ?>>
+			<input type="text" name="vendor" class="form-control input-sm" placeholder="<?php print _('Vendor'); ?>" value="<?php if(isset($device['vendor'])) print $device['vendor']; ?>" <?php print $readonly; ?>>
 		</td>
 	</tr>
 
@@ -74,7 +93,7 @@ else 								{ $readonly = ""; }
 	<tr>
 		<td><?php print _('Model'); ?></td>
 		<td>
-			<input type="text" name="model" placeholder="<?php print _('Model'); ?>" value="<?php if(isset($switch['model'])) print $switch['model']; ?>" <?php print $readonly; ?>>
+			<input type="text" name="model" class="form-control input-sm" placeholder="<?php print _('Model'); ?>" value="<?php if(isset($device['model'])) print $device['model']; ?>" <?php print $readonly; ?>>
 		</td>
 	</tr>
 
@@ -82,7 +101,7 @@ else 								{ $readonly = ""; }
 	<tr>
 		<td><?php print _('SW version'); ?></td>
 		<td>
-			<input type="text" name="version" placeholder="<?php print _('Software version'); ?>" value="<?php if(isset($switch['version'])) print $switch['version']; ?>" <?php print $readonly; ?>>
+			<input type="text" name="version" class="form-control input-sm" placeholder="<?php print _('Software version'); ?>" value="<?php if(isset($device['version'])) print $device['version']; ?>" <?php print $readonly; ?>>
 		</td>
 	</tr>
 
@@ -90,7 +109,7 @@ else 								{ $readonly = ""; }
 	<tr>
 		<td><?php print _('Description'); ?></td>
 		<td>
-			<textarea name="description" placeholder="<?php print _('Description'); ?>" <?php print $readonly; ?>><?php if(isset($switch['description'])) print $switch['description']; ?></textarea>
+			<textarea name="description" class="form-control input-sm" placeholder="<?php print _('Description'); ?>" <?php print $readonly; ?>><?php if(isset($device['description'])) print $device['description']; ?></textarea>
 			<?php
 			if( ($_POST['action'] == "edit") || ($_POST['action'] == "delete") ) {
 				print '<input type="hidden" name="switchId" value="'. $_POST['switchId'] .'">'. "\n";
@@ -98,6 +117,101 @@ else 								{ $readonly = ""; }
 			<input type="hidden" name="action" value="<?php print $_POST['action']; ?>">
 		</td>
 	</tr>
+
+	<!-- Custom -->
+	<?php
+	if(sizeof($custom) > 0) {
+
+		print '<tr>';
+		print '	<td colspan="2"><hr></td>';
+		print '</tr>';
+
+		# count datepickers
+		$timeP = 0;
+			
+		# all my fields
+		foreach($custom as $myField) {
+			# replace spaces with |
+			$myField['nameNew'] = str_replace(" ", "___", $myField['name']);
+			
+			# required
+			if($myField['Null']=="NO")	{ $required = "*"; }
+			else						{ $required = ""; }
+			
+			print '<tr>'. "\n";
+			print '	<td>'. $myField['name'] .' '.$required.'</td>'. "\n";
+			print '	<td>'. "\n";
+			
+			//set type
+			if(substr($myField['type'], 0,3) == "set") {
+				//parse values
+				$tmp = explode(",", str_replace(array("set(", ")", "'"), "", $myField['type']));
+				//null
+				if($myField['Null']!="NO") { array_unshift($tmp, ""); }
+								
+				print "<select name='$myField[nameNew]' class='form-control input-sm input-w-auto' rel='tooltip' data-placement='right' title='$myField[Comment]'>";
+				foreach($tmp as $v) {
+					if($v==$device[$myField['name']])	{ print "<option value='$v' selected='selected'>$v</option>"; }
+					else								{ print "<option value='$v'>$v</option>"; }
+				}
+				print "</select>";
+			}
+			//date and time picker
+			elseif($myField['type'] == "date" || $myField['type'] == "datetime") {
+				// just for first
+				if($timeP==0) {
+					print '<link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-datetimepicker.min.css">';
+					print '<script type="text/javascript" src="js/bootstrap-datetimepicker.min.js"></script>';
+					print '<script type="text/javascript">';
+					print '$(document).ready(function() {';
+					//date only
+					print '	$(".datepicker").datetimepicker( {pickDate: true, pickTime: false, pickSeconds: false });';
+					//date + time
+					print '	$(".datetimepicker").datetimepicker( { pickDate: true, pickTime: true } );';
+
+					print '})';
+					print '</script>';
+				}
+				$timeP++;
+				
+				//set size
+				if($myField['type'] == "date")	{ $size = 10; $class='datepicker';		$format = "yyyy-MM-dd"; }
+				else							{ $size = 19; $class='datetimepicker';	$format = "yyyy-MM-dd"; }
+								
+				//field
+				if(!isset($device[$myField['name']]))	{ print ' <input type="text" class="'.$class.' form-control input-sm input-w-auto" data-format="'.$format.'" name="'. $myField['nameNew'] .'" maxlength="'.$size.'" '.$delete.' rel="tooltip" data-placement="right" title="'.$myField['Comment'].'">'. "\n"; }
+				else									{ print ' <input type="text" class="'.$class.' form-control input-sm input-w-auto" data-format="'.$format.'" name="'. $myField['nameNew'] .'" maxlength="'.$size.'" value="'. $device[$myField['name']]. '" '.$delete.' rel="tooltip" data-placement="right" title="'.$myField['Comment'].'">'. "\n"; } 
+			}	
+			//boolean
+			elseif($myField['type'] == "tinyint(1)") {
+				print "<select name='$myField[nameNew]' class='form-control input-sm input-w-auto' rel='tooltip' data-placement='right' title='$myField[Comment]'>";
+				$tmp = array(0=>"No",1=>"Yes");
+				//null
+				if($myField['Null']!="NO") { $tmp[2] = ""; }
+				
+				foreach($tmp as $k=>$v) {
+					if(strlen($device[$myField['name']])==0 && $k==2)	{ print "<option value='$k' selected='selected'>"._($v)."</option>"; }
+					elseif($k==$device[$myField['name']])				{ print "<option value='$k' selected='selected'>"._($v)."</option>"; }
+					else												{ print "<option value='$k'>"._($v)."</option>"; }
+				}
+				print "</select>";
+			}	
+			//text
+			elseif($myField['type'] == "text") {
+				print ' <textarea class="form-control input-sm" name="'. $myField['nameNew'] .'" placeholder="'. $myField['name'] .'" '.$delete.' rowspan=3 rel="tooltip" data-placement="right" title="'.$myField['Comment'].'">'. $device[$myField['name']]. '</textarea>'. "\n";
+			}	
+			//default - input field
+			else {
+				print ' <input type="text" class="ip_addr form-control input-sm" name="'. $myField['nameNew'] .'" placeholder="'. $myField['name'] .'" value="'. $device[$myField['name']]. '" size="30" '.$delete.' rel="tooltip" data-placement="right" title="'.$myField['Comment'].'">'. "\n"; 
+			}
+						
+			print '	</td>'. "\n";
+			print '</tr>'. "\n";		
+		}
+
+	}
+	
+	?>
 
 	<!-- Sections -->
 	<tr>
@@ -115,11 +229,11 @@ else 								{ $readonly = ""; }
 		$sections = fetchSections();
 		
 		/* reformat switch sections */ 
-		$switchSections = reformatSwitchSections($switch['sections']);
+		$deviceSections = reformatDeviceSections($device['sections']);
 		
 		foreach($sections as $section) {
-			if(in_array($section['id'], $switchSections)) 	{ print '<input type="checkbox" name="section-'. $section['id'] .'" value="on" checked> '. $section['name'] .'<br>'. "\n"; }
-			else 											{ print '<input type="checkbox" name="section-'. $section['id'] .'" value="on"> '. $section['name'] .'<br>'. "\n"; }
+			if(in_array($section['id'], $deviceSections)) 	{ print '<div class="checkbox" style="margin:0px;"><input type="checkbox" name="section-'. $section['id'] .'" value="on" checked> '. $section['name'] .'</div>'. "\n"; }
+			else 											{ print '<div class="checkbox" style="margin:0px;"><input type="checkbox" name="section-'. $section['id'] .'" value="on">'. $section['name'] .'</span></div>'. "\n"; }
 		}
 		?>
 		</td>
@@ -132,8 +246,10 @@ else 								{ $readonly = ""; }
 
 <!-- footer -->
 <div class="pFooter">
-	<button class="btn btn-small hidePopups"><?php print _('Cancel'); ?></button>
-	<button class="btn btn-small <?php if($_POST['action']=="delete") { print "btn-danger"; } else { print "btn-success"; } ?>" id="editSwitchsubmit"><i class="icon-white <?php if($_POST['action']=="add") { print "icon-plus"; } else if ($_POST['action']=="delete") { print "icon-trash"; } else { print "icon-ok"; } ?>"></i> <?php print ucwords(_($_POST['action'])); ?></button>
+	<div class="btn-group">
+		<button class="btn btn-sm btn-default hidePopups"><?php print _('Cancel'); ?></button>
+		<button class="btn btn-sm btn-default <?php if($_POST['action']=="delete") { print "btn-danger"; } else { print "btn-success"; } ?>" id="editSwitchsubmit"><i class="fa <?php if($_POST['action']=="add") { print "fa-plus"; } else if ($_POST['action']=="delete") { print "fa-trash-o"; } else { print "fa-check"; } ?>"></i> <?php print ucwords(_($_POST['action'])); ?></button>
+	</div>
 
 	<!-- result -->
 	<div class="switchManagementEditResult"></div>

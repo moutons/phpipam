@@ -7,13 +7,15 @@
 
 /* include required scripts */
 require_once('../../functions/functions.php');
-// <eNovance>
-require_once('../../functions/dbfunctions.php');
-global $db;
-// </eNovance>
+require_once( dirname(__FILE__) . '/../../functions/scan/config-scan.php');
 
 /* verify that user is logged in */
 isUserAuthenticated(false);
+
+/* subnet Id must be a integer */
+if(!is_numeric($_POST['subnetId']))	{ die("<div class='alert alert-danger'>Invalid subnetId!</div>"); }
+if(!is_numeric($_POST['id']))		{ die("<div class='alert alert-danger'>Invalid id!</div>"); }
+
 
 // verify that user has write access
 $subnetPerm = checkSubnetPermission ($_POST['subnetId']);
@@ -25,51 +27,39 @@ if($subnetPerm < 2) {
 //get IP address details
 $ip = getIpAddrDetailsById ($_POST['id']);
 
-//verify that pign path is correct
-if(!file_exists($pathPing)) { $pingError = true; }
-
 //try to ping it
-if(pingHost($ip['ip_addr'], 1) == '0')  {
-	$status = "Online";
-	@updateLastSeen($_POST['id']);
-	// <eNovance>
-	// Set the new state of an ip addresse
-	if ( intval($ip['state']) == 0 )
-	{
-		$database    = new database($db['host'], $db['user'], $db['pass'], $db['name']);
-		$query = 'UPDATE ipaddresses SET state = 1 WHERE id = '.$ip['id'].';';
-		$database->executeQuery($query);
-	}
-}
-else {
-	$status = "Offline";
-	if ( intval($ip['state']) == 1 )
-    {
-		$database    = new database($db['host'], $db['user'], $db['pass'], $db['name']);
-        $query = 'UPDATE ipaddresses SET state = 0 WHERE id = '.$ip['id'].';';
-		$database->executeQuery($query);
-    }
-	// </eNovance>
-}
-?>
+$pingRes = pingHost($ip['ip_addr'], 1, 1);
 
+//update last seen if success
+if($pingRes==0) { @updateLastSeen($_POST['id']); }
+?>
 
 <!-- header -->
 <div class="pHeader"><?php print _('Ping check result'); ?></div>
 
 <!-- content -->
 <div class="pContent">
-	<?php if($pingError) { ?>
-		<div class="alert alert-error"><?php print _("Invalid ping path")."<hr>". _("You can set parameters for scan under functions/scan/config-scan.php"); ?></div>
-	<?php } elseif($status == "Online") { ?>
-		<div class="alert alert-success"><?php print _("IP address")." ".$ip['ip_addr']." "._("is alive"); ?></div>
-	<?php } else { ?>
-		<div class="alert alert-error"><?php print _("IP address")." ".$ip['ip_addr']." "._("is not alive"); ?></div>
-	<?php } ?>
+
+	<?php
+	# online
+	if($pingRes==0) { 
+		print "<div class='alert alert-success'>"._("IP address")." $ip[ip_addr] "._("is alive")."</div>";
+	}
+	# offline
+	elseif ($pingRes==1 || $pingRes==2) {
+		print "<div class='alert alert-danger'  >"._("IP address")." $ip[ip_addr] "._("is not alive")."</div>";
+	}
+	# error
+	else {
+		//get error code
+		$ecode = explainPingExit($pingRes);
+		print "<div class='alert alert-danger'>"._("Error").": $ecode ($pingRes)</div>";		
+	}
+	
+	?>
 </div>
 
 <!-- footer -->
 <div class="pFooter">
-	<!-- <eNovance> -->
-	<button class="btn btn-small hidePopup3"><?php print _('Close window'); ?></button>
+	<button class="btn btn-sm btn-default hidePopups"><?php print _('Close window'); ?></button>
 </div>

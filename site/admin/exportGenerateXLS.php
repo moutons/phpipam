@@ -23,7 +23,7 @@ $sections = fetchSections();
 
 
 //get all custom fields!
-$myFields = getCustomIPaddrFields();
+$myFields = getCustomFields('ipaddresses');
 $myFieldsSize = sizeof($myFields);
 
 $colSize = 8 + $myFieldsSize;
@@ -64,30 +64,32 @@ foreach ($sections as $section)
 	$lineCount = 0;
 	//Write titles
 	foreach ($subnets as $subnet) {
-		//subnet details
-		$vlan = subnetGetVLANdetailsById($subnet['vlanId']);
-		if(strlen($vlan['number']) > 0) {
-			$vlanText = " (vlan: " . $vlan['number'];
-			if(strlen($vlan['name']) > 0) {
-				$vlanText .= ' - '. $vlan['name'] . ')';
+		//ignore folders!
+		if($subnet['isFolder']!="1") {
+			//subnet details
+			$vlan = subnetGetVLANdetailsById($subnet['vlanId']);
+			if(strlen($vlan['number']) > 0) {
+				$vlanText = " (vlan: " . $vlan['number'];
+				if(strlen($vlan['name']) > 0) {
+					$vlanText .= ' - '. $vlan['name'] . ')';
+				}
+				else {
+					$vlanText .= ")";
+				}
 			}
 			else {
-				$vlanText .= ")";
+				$vlanText = "";
 			}
-		}
-		else {
-			$vlanText = "";
-		}
-		
-		$worksheet->write($lineCount, 0, transform2long($subnet['subnet']) . "/" .$subnet['mask'] . " - " . $subnet['description'] . $vlanText, $format_header );
-		$worksheet->mergeCells($lineCount, 0, $lineCount, $colSize);
-		
-		$lineCount++;
-		
-		//IP addresses in subnet
-		$ipaddresses = getIpAddressesBySubnetId ($subnet['id']);
-		
-		//write headers
+			
+			$worksheet->write($lineCount, 0, transform2long($subnet['subnet']) . "/" .$subnet['mask'] . " - " . $subnet['description'] . $vlanText, $format_header );
+			$worksheet->mergeCells($lineCount, 0, $lineCount, $colSize);
+			
+			$lineCount++;
+			
+			//IP addresses in subnet
+			$ipaddresses = getIpAddressesBySubnetId ($subnet['id']);
+			
+			//write headers
 			$worksheet->write($lineCount, 0, _('ip address' ),$format_title);
 			$worksheet->write($lineCount, 1, _('ip state' ),$format_title);
 			$worksheet->write($lineCount, 2, _('description' ),$format_title);
@@ -100,23 +102,30 @@ foreach ($sections as $section)
 			$m = 9;
 			//custom
 			if(sizeof($myFields) > 0) {
-				foreach($myFields as $myField) {
-					$worksheet->write($lineCount, $m, $myField['name'] ,$format_title);
-					$m++;
-				}
+			foreach($myFields as $myField) {
+				$worksheet->write($lineCount, $m, $myField['name'] ,$format_title);
+				$m++;
 			}
+		}
 			
 			$lineCount++;
-		
-		if(sizeof($ipaddresses) > 0) {
+			
+			if(sizeof($ipaddresses) > 0) {
 
 			foreach ($ipaddresses as $ip) {
-		
+			
 				//we need to reformat state!
 				switch($ip['state']) {
 					case 0: $ip['state'] = _("Offline");	break;
 					case 1: $ip['state'] = _("Active");		break;
 					case 2: $ip['state'] = _("Reserved");	break;
+					case 3: $ip['state'] = _("DHCP");		break;
+				}
+				
+				//change switch ID to name
+				$devices = getAllUniqueDevices ();
+				foreach($devices as $d) {
+					if($d['id']==$ip['switch'])	{ $ip['switch']=$d['hostname']; }
 				}
 		
 				$worksheet->write($lineCount, 0, transform2long($ip['ip_addr']), $format_left);
@@ -131,7 +140,7 @@ foreach ($sections as $section)
 				//custom
 				$m = 9;
 				if(sizeof($myFields) > 0) {
-						foreach($myFields as $myField) {
+					foreach($myFields as $myField) {
 						$worksheet->write($lineCount, $m, $ip[$myField['name']]);
 						$m++;
 					}
@@ -141,13 +150,14 @@ foreach ($sections as $section)
 			}
 		
 		}
-		else {
-			$worksheet->write($lineCount, 0, _('No hosts'));
+			else {
+				$worksheet->write($lineCount, 0, _('No hosts'));
+				$lineCount++;
+			}
+			
+			//new line
 			$lineCount++;
 		}
-		
-		//new line
-		$lineCount++;
 	}
 }
 

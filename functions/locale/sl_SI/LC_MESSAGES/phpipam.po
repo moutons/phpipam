@@ -4,7 +4,7 @@
 # miha petkovsek <miha.petkovsek@gmail.com>, 2013.
 #
 
-# "Project-Id-Version: 0.85.002\n"
+# "Project-Id-Version: 1.1\n"
 # "Report-Msgid-Bugs-To: Miha Petkovsek <miha.petkovsek@gmail.com>\n"
 # "POT-Creation-Date: 2013-04-02 14:33+0200\n"
 # "PO-Revision-Date: 2013-06-28 14:33+0200\n"
@@ -694,7 +694,7 @@ msgstr "Glavno omrežje ne obstaja"
 #: site/tools/vrf.php:104 site/tools/subnets.php:104
 #: site/ipaddr/subnetDetails.php:126
 msgid "enabled"
-msgstr "omogočeni"
+msgstr "omogočeno"
 
 #: site/tools/vrf.php:114
 msgid "No subnets belonging to this VRF"
@@ -4183,3 +4183,591 @@ msgstr "DHCP stiskanje"
 #: site/admin/settings.php
 msgid "Compress DHCP ranges in IP table"
 msgstr "Združevanje zaporednih DHCP IP naslovov"
+
+#: site/subnets.php
+msgid "Add new"
+msgstr "Ustvari novo"
+
+#: site/subnets.php
+msgid "Add new folder to"
+msgstr "Dodaj novo mapo v"
+
+# site/subnets.php
+msgid "Available VLANs"
+msgstr "Razpoložljivi VLANi"
+
+# site/subnets.php
+msgid "Available VRFs"
+msgstr "Razpoložljivi VRFi"
+
+#: functions/functions-common.php
+msgid "Subnet contains more subnets"
+msgstr "Omrežje vsebuje več podomrežij"
+
+#: functions/functions-common.php
+msgid "Click on folder to open/close"
+msgstr "Kliknite na mapo za prikaz/skritje vsebine"
+
+#: functions/functions-common.php
+msgid "VLAN contains subnets"
+msgstr "VLAN vsebuje omrežja"
+
+#: functions/functions-common.php
+msgid "VRF contains subnets"
+msgstr "VRF vsebuje omrežja"
+
+#: site/admin/manageSection.php
+msgid "Show VLANs"
+msgstr "Prikaz VLANov"
+
+#: site/admin/manageSection.php
+msgid "Show VRFs"
+msgstr "Prikaz VRFov"
+
+#: site/admin/manageSectionEdit.php
+msgid "Show list of VLANs and belonging subnets in subnet list"
+msgstr "Prikaz seznama VLANov in pripadajočih omrežij v seznamu omrežij"
+
+#: site/admin/manageSectionEdit.php
+msgid "Show list of VRFs and belonging subnets in subnet list"
+msgstr "Prikaz seznama VRFov in pripadajočih omrežij v seznamu omrežij"
+
+#: site/ipaddr/vlanDetails.php
+msgid "VLAN details"
+msgstr "Podatki o VLANu"
+
+#: site/ipaddr/vlanSubnets.php
+msgid "has no belonging subnets"
+msgstr "nima pripadajočih omrežij"
+
+#: site/ipaddr/vlanSubnets.php
+msgid "belonging subnets"
+msgstr "pripadajočih omrežij"
+
+#: site/ipaddr/vlanDetails.php
+msgid "VRF details"
+msgstr "Podatki o VRFu"
+
+#: site/ipaddr/vlanDetails.php
+msgid "Invalid VLAN id"
+msgstr "Napačen ID VLANa"
+
+#: site/ipaddr/vrfDetails.php
+msgid "Invalid VRF id"
+msgstr "Napačen ID VRFa"
+
+#: site/admin/manageSection.php
+msgid "Parent"
+msgstr "Master"
+
+#: site/sections.php
+msgid "SubSections in"
+msgstr "Sekcije v"
+
+#: site/admin/manageSectionEdit.php
+msgid "Select parent section to create subsection"
+msgstr "Izberite glavno sekcijo če jo želite kreirati pod aktivno"
+
+#: site/tools/userMenu.php
+msgid "Widgets"
+msgstr "Widgeti"
+
+msgid "Select widgets to be displayed on dashboard"
+msgstr "Izberite widgete za prikaz na dashboardu"
+
+#: site/dashboard/index.php
+msgid "No widgets selected"
+msgstr "Izbran ni noben widget"
+
+msgid "Please select widgets to be displayed on dashboard on user menu page"
+msgstr "Widgete za prikaz na dashboardu lahko izberete v svojih uporabniških nastavitvah"
+
+#: site/admin/customUserFieldsEdit.php
+msgid "Enter comment for users"
+msgstr "Vpišite komentar za uporanike"
+
+msgid "Required field"
+msgstr "Zahtevano polje"
+
+#: site/admin/customIPFields.php
+msgid "Required"
+msgstr "Zahtevano"
+
+#: site/admin/customDeviceFieldsEdit.php
+msgid "Custom device fields"
+msgstr "Dodatna polja za naprave"
+
+msgid "Add new custom device field"
+msgstr "Dodaj novo polje za naprave"
+
+#: site/ipaddr/sectionAllSubnets.php
+msgid "Belonging subsections"
+msgstr "Pripadajoči razdelki"
+
+#: site/subnets.php
+msgid "Back to"
+msgstr "Nazaj na"
+
+#: site/admin/manageAD_AD.php
+msgid "Domain account"
+msgstr "Domenski račun"
+
+msgid "Domain account for search operations"
+msgstr "Domenski račun za iskanje uporabnikov"
+
+#: site/admin/userADsearchResult.php
+msgid "No users found"
+msgstr "Nisem našel uporabnikov"
+
+msgid "Possible reasons"
+msgstr "Možni razlogi:"
+
+msgid "Username not existing"
+msgstr "Uporabniško ime ne obstaja"
+
+msgid "Invalid baseDN setting for AD"
+msgstr "Neveljaven osnovni DN za AD"
+
+msgid "AD account does not have enough privileges for search"
+msgstr "AD račun nima dovolj pravic za iskanje"
+
+#: site/admin/usersEditResult.php
+msgid "Admin user cannot be deleted"
+msgstr "Administratorskega računa ni mogoče pobrisati"
+
+#: site/admin/manageFolderSubmit.php
+msgid "Error adding new folder"
+msgstr "Napaka pri dodajanju nove mape"
+
+msgid "Folder, IP addresses and all belonging subnets deleted successfully"
+msgstr "Mapa, IP naslovi in propadajoča omrežja izbrisana"
+
+msgid "Folder add successfull"
+msgstr "Mapa dodana"
+
+msgid "Folder edit successfull"
+msgstr "Mapa urejena"
+
+#: site/ipaddr/folderDetails.php
+msgid "Folder does not exist"
+msgstr "Mapa ne obstaja"
+
+msgid "You do not have permission to access this folder"
+msgstr "Nimate pravic za dostop do te mape"
+
+msgid "Folder details"
+msgstr "Podatki o mapi"
+
+msgid "Folder name"
+msgstr "Ime mape"
+
+msgid "Add new nested folder"
+msgstr "Dodaj novo mapo"
+
+msgid "directly nested folders"
+msgstr "pripadajoče mape"
+
+msgid "Folder has no nested folders or belonging subnets"
+msgstr "Mapa nima pripadajočih map in omrežij"
+
+msgid "You do not have permissions to edit folder"
+msgstr "Nimate pravic za urejanje mape"
+
+msgid "Edit folder"
+msgstr "Uredi mapo"
+
+msgid "Manage folder permissions"
+msgstr "Uredi pravice"
+
+msgid "Delete folder"
+msgstr "Izbriši mapo"
+
+#: site/admin/CSVimportSubmit.php
+msgid "Errors marked with red will be ignored from importing"
+msgstr "Napake, označene z rdečo bodo izključene iz vnosa"
+
+msgid "Search user in AD"
+msgstr "Poišči uporabnika v AD"
+
+msgid "Following users were found"
+msgstr "Našel sem sledeče uporabnike"
+
+msgid "Select"
+msgstr "Izberi"
+
+#: functions/functions-common.php
+msgid "Favourite subnets"
+msgstr "Priljubljena omrežja"
+
+msgid "No favourite subnets selected"
+msgstr "Ni priljubljenih omrežij"
+
+msgid "You can add subnets to favourites by clicking star icon in subnet details"
+msgstr "Omrežje lahko dodate v priljubljene s klikom na szvezdivo v podatkih o omrežju"
+
+msgid "Click to remove from favourites"
+msgstr "Kliknite za odstranitev"
+
+msgid "Click to add to favourites"
+msgstr "Kliknite za dodajanje"
+
+#: site/tools/favouriteEdit.php
+msgid "Error editing favourite"
+msgstr "Napaka pri urejanju priljubljenih omrežij"
+
+#: site/sections.php
+msgid "Favourite networks"
+msgstr "Priljubljena omrežja"
+
+#: site/ipaddr/ipDetailsChangelog.php
+msgid "Changelog"
+msgstr "Log sprememb"
+
+msgid "No changelogs available"
+msgstr "Ni zabeleženih sprememb"
+
+msgid "No changelog entries are available for this host"
+msgstr "Za ta IP naslov ni zabeleženih nobenih sprememb"
+
+msgid "No changelog entries are available for this subnet"
+msgstr "Za to omrežje ni zabeleženih nobenih sprememb"
+
+msgid "No changelog entries are available for this section"
+msgstr "Za ta razdelek ni zabeleženih nobenih sprememb"
+
+msgid "No changelog entries are available"
+msgstr "Ni zabeleženih sprememb"
+
+#: site/ipaddr/ipDetails.php
+msgid "Avalibility"
+msgstr "Razpoložljivost"
+
+msgid "Last edited"
+msgstr "Nazadnje urejeno"
+
+msgid "Action"
+msgstr "Dejanje"
+
+msgid "Result"
+msgstr "Rezultat"
+
+msgid "Change"
+msgstr "Sprememba"
+
+#: site/tools/changelogPrint.php
+msgid "Output has been limited to last 50 lines"
+msgstr "Rezultat je bil omejen na zadnjih 50 vrstic"
+
+msgid "Output has been limited to last 100 lines"
+msgstr "Rezultat je bil omejen na zadnjih 100 vrstic"
+
+msgid "Output has been limited to last 250 lines"
+msgstr "Rezultat je bil omejen na zadnjih 250 vrstic"
+
+msgid "Output has been limited to last 500 lines"
+msgstr "Rezultat je bil omejen na zadnjih 500 vrstic"
+
+#: site/admin/settings.php
+msgid "Enable changelog"
+msgstr "Omogoči logiranje sprememb"
+
+#: site/tools/changelog.php
+msgid "Change logging is disabled. You can enable it under administration"
+msgstr "Logiranje sprememb ni omogočeno. To lahko spremenite v nastavitvah sistema"
+
+#: site/admin/settings.php
+msgid "Ping path"
+msgstr "Ping pot"
+
+msgid "Set path for ping executable file (default /bin/ping)"
+msgstr "Pot do ping izvršne datoteke (privzeto /bin/ping/)"
+
+msgid "Max scan threads"
+msgstr "Max hkratnih sej"
+
+msgid "Set maximum nubmer of concurrent ICMP checks (default 128)"
+msgstr "Maksimalno število hkratnih ICMP preverb ob skeniraju (privzeto 128)"
+
+#: functions/functions-common.php
+msgid "Last 5 change log entries"
+msgstr "Zadnjih 5 vnosov sprememb"
+
+#: site/admin/widgets.php
+msgid "You can manage widgets here"
+msgstr "Tukaj lahko upravljate z widgeti"
+
+msgid "Create new widget"
+msgstr "Dodaj nov widget"
+
+msgid "No widgets created yet"
+msgstr "Ni razpoložljivih widgetov"
+
+msgid "Create widget file in directory site/dashboard/widgets/"
+msgstr "Datoteko za widget kreirajte v site/dashboard/widgets/"
+
+#: site/admin/widgetEdit.php
+msgid "Add new widget"
+msgstr "Dodaj nov widget"
+
+msgid "Edit widget"
+msgstr "Uredi widget"
+
+msgid "Delete widget"
+msgstr "Izbriši widget"
+
+#: site/admin/widgetEditResult.php
+msgid "Widget add error"
+msgstr "Napaka pri dodajanju widgets"
+
+msgid "Widget edit error"
+msgstr "Napaka pri urejanju widgeta"
+
+msgid "Widget delete error"
+msgstr "Napaka pri izbrisu widgeta"
+
+msgid "Widget add success"
+msgstr "Widget dodan"
+
+msgid "Widget edit success"
+msgstr "Widget urejen"
+
+msgid "Widget delete success"
+msgstr "Widget izbrisan"
+
+#: site/dashboard/widgets/requests.php
+msgid "Active IP address requests"
+msgstr "Aktivni zahtevki za IP naslov"
+
+#: site/sections.php
+msgid "Click to reorder widgets"
+msgstr "Klikni za prerazporeditev widgetov"
+
+msgid "Click to save widgets order"
+msgstr "Shrani vrstni red widgetov"
+
+#: site/dashboard/widgetPopup.php
+msgid "Add new widget to dashboard"
+msgstr "Dodaj nov widget na dashboard"
+
+msgid "All available widgets are already on dashboard"
+msgstr "Vsi razpoložljivi widgeti so že na dashboardu"
+
+#: site/tools/userMenu.php
+msgid "Save order"
+msgstr "Shrani vrstni red"
+
+#: site/admin/widgets.php
+msgid "File"
+msgstr "Datoteka"
+
+msgid "Admin only"
+msgstr "Samo za administratorje"
+
+msgid "Link to page"
+msgstr "Povezava na stran"
+
+msgid "Widget size"
+msgstr "Velikost"
+
+#: site/ipaddr/scan/subnetScanDiscoveryPing.php
+msgid "No alive host found"
+msgstr "Nisem našel razpoložljivih naprav"
+
+msgid "Errors occured during scan"
+msgstr "Pri skeniranju je prišlo do napake"
+
+msgid "Excluded from check"
+msgstr "Preverjanje izklopljeno"
+
+#: site/login/loginCheck.php
+msgid "Invalid characters in username"
+msgstr "Neveljavni znaki v uporabniškem imenu"
+
+msgid "Invalid characters in password"
+msgstr "Neveljavni znaki v geslu"
+
+#: site/admin/adminMenu.php
+msgid "Mail settings"
+msgstr "Mail nastavitve"
+
+msgid "Mail server settings"
+msgstr "Nastavitve mail strežnika"
+
+msgid "Server type"
+msgstr "Tip strežnika"
+
+msgid "Localhost"
+msgstr "Lokalen strežnik"
+
+msgid "SMTP"
+msgstr "SMTP"
+
+msgid "Select server type for sending mail messages"
+msgstr "Izberite tip strežnika za pošiljanje email sporočil"
+
+msgid "Server authentication"
+msgstr "Avtentikacija"
+
+msgid "Select yes if authentication is required"
+msgstr "Izberite da, če strežnik zahteva avtentikacijo"
+
+msgid "Set username for SMTP authentication"
+msgstr "Vpišite uporabniško ime za SMTP"
+
+msgid "Set password for SMTP authentication"
+msgstr "Vpišite geslo za SMTP"
+
+msgid "Mail sender settings"
+msgstr "Nastavitve pošiljatelja"
+
+msgid "Send test email"
+msgstr "Pošljite testno sporočilo"
+
+msgid "Mail server type"
+msgstr "Tip mail strežnika"
+
+msgid "SMTP settings"
+msgstr "SMTP nastavitve"
+
+msgid "Server address"
+msgstr "Naslov strežnika"
+
+msgid "Sender name"
+msgstr "Ime pošiljatelja"
+
+msgid "Sender mail"
+msgstr "Email pošiljatelja"
+
+#: site/admin.settings.php
+msgid "Set administrator name"
+msgstr "Vpišite ime administratorja"
+
+msgid "Set administrator e-mail"
+msgstr "Vpišite email administratorja"
+
+#: site/admin/verifyDatabase.php
+msgid "Cannot get fix for table"
+msgstr "Ne morem popraviti tabele"
+
+msgid "Fix table"
+msgstr "Popravi tabelo"
+
+msgid "Fix field"
+msgstr "Popravi polje"
+
+#: site/admin/verifyDatabaseFix.php
+msgid "Wrong parameters"
+msgstr "Napačni parametri"
+
+msgid "Table fixed"
+msgstr "Tabela popravljena"
+
+msgid "Field fixed"
+msgstr "Polje popravljeno"
+
+#: site/sections.php
+msgid "Database errors detected"
+msgstr "Zaznane so napake v podatkovni bazi"
+
+#: site/tools/devicesPrint.php
+msgid "Show all hosts"
+msgstr "Prikaži vse IPje"
+
+msgid "No hosts belonging to this device"
+msgstr "Noben IP ne pripada tej napravi"
+
+msgid "Sort by vendor"
+msgstr "Sortiraj po proizvajalcu"
+
+#: site/admin/userEditPrint.php
+msgid "Mail notifications"
+msgstr "E-Mail obvestila"
+
+msgid "Select yes to receive notification change mail for"
+msgstr "Izberi Da za email obvestila o spremembah (changelog)"
+
+msgid "IP edited, Subnet edited, State change"
+msgstr "IP, Omrezjnih in statusnih sprememb"
+
+#: site/admin/userEditPrint.php
+msgid "Mail State changes"
+msgstr "EMail sprememb stanja"
+
+#: site/admin/usersEditPrint.php
+msgid "Require user to change password after initial login"
+msgstr "Zahtevaj spremembo gesla ob prvi prijavi"
+
+#: site/tools/changePasswordRequired.php
+msgid "Password change required"
+msgstr "Zahtevana je sprememba gesla"
+
+msgid "You are required to change your password before you can access phpipam."
+msgstr "Preden lahko dostopate do phpipam orodja morate spremeniti svoje geslo."
+
+msgid "Password change"
+msgstr "Sprememba gesla"
+
+msgid "Save password"
+msgstr "Shrani geslo"
+
+#: site/login/loginCheck.php
+msgid "You have been blocked for 5 minutes due to authentication failures"
+msgstr "Zaradi neuspesne avtentikacije ste bili blokirani za 5 minut"
+
+#: site/admin/settings.php
+msgid "Use nicer URL structure"
+msgstr "Uporabi lepšo strukturo URL zapisa"
+
+msgid "Please note that mod_rewrite is required with appropriate settings if pretified links are selected."
+msgstr "Za uporabo lepših URL zapisov je zahtevan mod_rewrite modul s pravilnimi nastavitvami."
+
+#: site/admin/settings.php
+msgid "Hide free range"
+msgstr "Skrij prikaz prostega razpona"
+
+msgid "Do not display free range in IP address and subnets list"
+msgstr "Skrij prikaz prostega razpona IP naslovov in omrežij"
+
+msgid "Highest VLAN number"
+msgstr "Najvišja VLAN številka"
+
+msgid "Set highest VLAN number (default 4096)"
+msgstr "Nastavitev najvišje VLAN številke (privzeto 4096)"
+
+#: site/admin/manageVLANresult.php
+msgid "Highest possible VLAN number is "
+msgstr "Najvišja možna številka VLAN je "
+
+msgid "VLAN number cannot be negative"
+msgstr "VLAN številkane more biti negativna"
+
+msgid "Not number"
+msgstr "Ni številka"
+
+#: site/admin/manageSubnetEditResult.php
+msgid "I will delete"
+msgstr "Izbrisal bom"
+
+msgid "Are you sure you want to delete above items?"
+msgstr "Ste prepričani, da želite izbrisati zgornje elemente?"
+
+msgid "Are you sure you want to delete IP address"
+msgstr "Ste prepričani, da želite izbrisati IP naslov"
+
+#:site/settings/setitngs.php
+msgid "Inactivity timeout"
+msgstr "Odjava zaradi neaktivnosti"
+
+msgid "Select inactive timeout for user sessions. Please note that if default php session settings in php.ini are lower they will override this"
+msgstr "Izberite samodejno odjavo uporabnika zaradi nekativnosti. V kolikor so nastavitve v php.ini nižje od te vrednosti bodo prevlafale"
+
+#: site/login/index.php
+msgid "You session has timed out"
+msgstr "Vaša seja se je iztekla"
+
+#: site/admin/manageSubnetEdit.php
+msgid "Discover new hosts"
+msgstr "Odkrij nove naprave"
+
+msgid "Discover new hosts in this subnet"
+msgstr "Odkrij nove naprave v omrežju"

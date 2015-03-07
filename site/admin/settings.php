@@ -19,7 +19,7 @@ $langs = getLanguages ();
 <hr>
 
 <form name="settings" id="settings">
-<table id="settings" class="table table-striped table-condensed table-top">
+<table id="settings" class="table table-hover table-condensed table-top">
 
 <!-- site settings -->
 <tr class="settings-title">
@@ -30,33 +30,56 @@ $langs = getLanguages ();
 <tr>
 	<td><?php print _('Site title'); ?></th>
 	<td>
-		<input type="text" name="siteTitle" value="<?php print $settings['siteTitle']; ?>">
+		<input type="text" class="form-control input-sm input-w-250" name="siteTitle" value="<?php print $settings['siteTitle']; ?>">
 	</td>
-	<td class="info"><?php print _('Set site title'); ?></td>
+	<td class="info2"><?php print _('Set site title'); ?></td>
 </tr>
 
 <!-- site domain -->
 <tr>
 	<td><?php print _('Site domain'); ?></td>
 	<td>
-		<input type="text" size="50" name="siteDomain" value="<?php print $settings['siteDomain']; ?>">
+		<input type="text" class="form-control input-sm" name="siteDomain" value="<?php print $settings['siteDomain']; ?>">
 	</td>
-	<td class="info"><?php print _('Set domain for sending mail notifications'); ?></td>
+	<td class="info2"><?php print _('Set domain for sending mail notifications'); ?></td>
 </tr>
 
 <!-- site URL -->
 <tr>
 	<td class="title"><?php print _('Site URL'); ?></td>
 	<td>
-		<input type="text" size="50" name="siteURL" value="<?php print $settings['siteURL']; ?>">
+		<input type="text" class="form-control input-sm" name="siteURL" value="<?php print $settings['siteURL']; ?>">
 	</td>
-	<td class="info"><?php print _('Set site URL'); ?></td>
+	<td class="info2"><?php print _('Set site URL'); ?></td>
 </tr>
+<!-- prettyLinks -->
+<tr>
+	<td class="title"><?php print _('Prettify links'); ?></td>
+	<td>
+		<select name="prettyLinks" class="form-control input-sm input-w-auto">
+		<?php
+			print "<option value='No'>"._('No')."</option>";
+			if($settings['prettyLinks']=="Yes") { print "<option value='Yes' selected='selected'>"._('Yes')."</option>"; }
+			else								{ print "<option value='Yes'>"._('Yes')."</option>"; }
+		?>
+		</select>
+	</td>
+	<td class="info2">
+		<?php print _('Use nicer URL structure'); ?>?<br>
+		<ul>
+			<li><?php print _("No"); ?>:  ?page=administration&link2=settings</li>
+			<li><?php print _("Yes"); ?>: /administration/settings/</li>
+		</ul>
+		<?php print _("Please note that mod_rewrite is required with appropriate settings if pretified links are selected."); ?><br>
+		<a href="http://phpipam.net/prettified-links-with-mod_rewrite/">http://phpipam.net/prettified-links-with-mod_rewrite/</a>
+		</td>
+</tr>
+
 <!-- Default language -->
 <tr>
 	<td class="title"><?php print _('Default language'); ?></td>
 	<td>
-		<select name="defaultLang">
+		<select name="defaultLang" class="form-control input-sm input-w-auto">
 		<?php
 		if(sizeof($langs)>0) {
 			//default
@@ -69,8 +92,28 @@ $langs = getLanguages ();
 		?>
 		</select>
 	</td>
-	<td class="info"><?php print _('Select default language'); ?></td>
+	<td class="info2"><?php print _('Select default language'); ?></td>
 </tr>
+
+<!-- Mex session duration -->
+<tr>
+	<td class="title"><?php print _('Inactivity timeout'); ?></td>
+	<td>
+		<select name="inactivityTimeout" class="form-control input-sm input-w-auto">
+		<?php
+		$durations = array("900"=>"15 minutes","1800"=>"30 minutes", "3600"=>"1 hour", "7200"=>"2 hours", "21600"=>"6 hours", "43200"=>"12 hours", "86400"=>"24 hours");
+		//default
+		foreach($durations as $k=>$d) {
+			if($k==$settings['inactivityTimeout']) 	{ print "<option value='$k' selected='selected'>$d</option>"; }
+			else									{ print "<option value='$k' 				   >$d</option>"; }
+		}
+		?>
+		</select>
+	</td>
+	<td class="info2"><?php print _('Select inactive timeout for user sessions. Please note that if default php session settings in php.ini are lower they will override this'); ?></td>
+</tr>
+
+
 
 
 <!-- Admin settings -->
@@ -82,10 +125,10 @@ $langs = getLanguages ();
 <tr>
 	<td class="title"><?php print _('Admin name'); ?></td>
 	<td>
-		<input type="text" size="50" name="siteAdminName" value="<?php print $settings['siteAdminName']; ?>">
+		<input type="text" class="form-control input-sm" name="siteAdminName" value="<?php print $settings['siteAdminName']; ?>">
 	</td>
-	<td class="info">
-		<?php print _('Set administrator name to display when sending mails and for contact info'); ?>
+	<td class="info2">
+		<?php print _('Set administrator name'); ?>
 	</td>
 </tr>
 
@@ -93,10 +136,10 @@ $langs = getLanguages ();
 <tr>
 	<td class="title"><?php print _('Admin mail'); ?></td>
 	<td>
-		<input type="text" size="50" name="siteAdminMail" value="<?php print $settings['siteAdminMail']; ?>">
+		<input type="text" class="form-control input-sm" name="siteAdminMail" value="<?php print $settings['siteAdminMail']; ?>">
 	</td>
-	<td class="info">
-		<?php print _('Set administrator e-mail to display when sending mails and for contact info'); ?>
+	<td class="info2">
+		<?php print _('Set administrator e-mail'); ?>
 	</td>
 </tr>
 
@@ -111,13 +154,13 @@ $langs = getLanguages ();
 <tr>
 	<td class="title"><?php print _('Auth type'); ?></td>
 	<td>
-		<select name="domainAuth">
+		<select name="domainAuth" class="form-control input-sm input-w-auto">
 			<option value="0" <?php if($settings['domainAuth'] == 0) print 'selected'; ?>><?php print _('Local authentication only'); ?></option>
 			<option value="1" <?php if($settings['domainAuth'] == 1) print 'selected'; ?>><?php print _('AD authentication'); ?></option>
 			<option value="2" <?php if($settings['domainAuth'] == 2) print 'selected'; ?>><?php print _('OpenLDAP authentication'); ?></option>
 		</select>
 	</td>
-	<td class="info">
+	<td class="info2">
 		<?php print _('Set authentication type for users. Requires php LDAP support. Set connection settings in admin menu'); ?>
 	</td>
 </tr>
@@ -128,7 +171,7 @@ $langs = getLanguages ();
 	<td>
 		<input type="checkbox" value="1" name="api" <?php if($settings['api'] == 1) print 'checked'; ?>>
 	</td>
-	<td class="info">
+	<td class="info2">
 		<?php print _('Enable or disable API server module'); ?>
 	</td>
 </tr>
@@ -139,7 +182,7 @@ $langs = getLanguages ();
 	<td>
 		<input type="checkbox" value="1" name="enableIPrequests" <?php if($settings['enableIPrequests'] == 1) print 'checked'; ?>>
 	</td>
-	<td class="info">
+	<td class="info2">
 		<?php print _('Enable or disable IP request module'); ?>
 	</td>
 </tr>
@@ -150,7 +193,7 @@ $langs = getLanguages ();
 	<td>
 		<input type="checkbox" value="1" name="enableVRF" <?php if($settings['enableVRF'] == 1) print 'checked'; ?>>
 	</td>
-	<td class="info">
+	<td class="info2">
 		<?php print _('Enable or disable VRF module'); ?>
 	</td>
 </tr>
@@ -161,7 +204,7 @@ $langs = getLanguages ();
 	<td>
 		<input type="checkbox" value="1" name="enableDNSresolving" <?php if($settings['enableDNSresolving'] == 1) print 'checked'; ?>>
 	</td>
-	<td class="info">
+	<td class="info2">
 		<?php print _('Check reverse dns lookups for IP addresses that do not have hostname in database. (Activating this feature can significantly increase ip address pages loading time!)'); ?>
 	</td>
 </tr>
@@ -172,8 +215,30 @@ $langs = getLanguages ();
 	<td>
 		<input type="checkbox" value="1" name="vlanDuplicate" <?php if($settings['vlanDuplicate'] == 0) print ''; else print 'checked'; ?>>
 	</td>
-	<td class="info">
+	<td class="info2">
 		<?php print _('Allow duplicate VLAN numbers'); ?>
+	</td>
+</tr>
+
+<!-- Max VLAN number -->
+<tr>
+	<td class="title"><?php print _('Highest VLAN number'); ?></td>
+	<td>
+		<input type="text" class="form-control input-sm" name="vlanMax" value="<?php print $settings['vlanMax']; ?>">
+	</td>
+	<td class="info2">
+		<?php print _('Set highest VLAN number (default 4096)'); ?>
+	</td>
+</tr>
+
+<!-- changelog -->
+<tr>
+	<td class="title"><?php print _('Changelog'); ?></td>
+	<td>
+		<input type="checkbox" value="1" name="enableChangelog" <?php if($settings['enableChangelog'] == 0) print ''; else print 'checked'; ?>>
+	</td>
+	<td class="info2">
+		<?php print _('Enable changelog'); ?>
 	</td>
 </tr>
 
@@ -181,10 +246,37 @@ $langs = getLanguages ();
 <tr>
 	<td class="title"><?php print _('Ping status intervals'); ?></td>
 	<td>
-		<input type="text" name="pingStatus" value="<?php print $settings['pingStatus']; ?>">
+		<input type="text" class="form-control input-sm" name="pingStatus" value="<?php print $settings['pingStatus']; ?>">
 	</td>
-	<td class="info">
+	<td class="info2">
 		<?php print _('Ping status intervals for IP addresses in seconds - warning;offline (Default: 1800;3600)'); ?>
+	</td>
+</tr>
+
+<!-- Ping path -->
+<tr>
+	<td class="title"><?php print _('Ping path'); ?></td>
+	<?php
+	//verify that ping file exists!
+	if(!file_exists($settings['scanPingPath']))	{ $class="danger"; }
+	else										{ $class=""; }
+	?>
+	<td class="<?php print $class; ?>">
+		<input type="text" class="form-control input-sm" name="scanPingPath" value="<?php print $settings['scanPingPath']; ?>">
+	</td>
+	<td class="info2">
+		<?php print _('Set path for ping executable file (default /bin/ping)'); ?>
+	</td>
+</tr>
+
+<!-- Ping threads -->
+<tr>
+	<td class="title"><?php print _('Max scan threads'); ?></td>
+	<td>
+		<input type="text" class="form-control input-sm" name="scanMaxThreads" value="<?php print $settings['scanMaxThreads']; ?>">
+	</td>
+	<td class="info2">
+		<?php print _('Set maximum nubmer of concurrent ICMP checks (default 128)'); ?>
 	</td>
 </tr>
 
@@ -201,30 +293,19 @@ $langs = getLanguages ();
 	<td>
 		<input type="checkbox" value="1" name="dhcpCompress" <?php if($settings['dhcpCompress'] == 1) print 'checked'; ?>>
 	</td>
-	<td class="info">
+	<td class="info2">
 		<?php print _('Compress DHCP ranges in IP table'); ?>
 	</td>
 </tr>
 
-<!-- Tooltips -->
+<!-- Hide free range -->
 <tr>
-	<td class="title"><?php print _('Tooltips'); ?></td>
+	<td class="title"><?php print _('Hide free range'); ?></td>
 	<td>
-		<input type="checkbox" value="1" name="showTooltips" <?php if($settings['showTooltips'] == 1) print 'checked'; ?>>
+		<input type="checkbox" value="1" name="hideFreeRange" <?php if($settings['hideFreeRange'] == 1) print 'checked'; ?>>
 	</td>
-	<td class="info">
-		<?php print _('Enable or disable tooltips'); ?>
-	</td>
-</tr>
-
-<!-- HTML email -->
-<tr>
-	<td class="title"><?php print _('HTML email'); ?></td>
-	<td>
-		<input type="checkbox" value="1" name="htmlMail" <?php if($settings['htmlMail'] == 1) print 'checked'; ?>>
-	</td>
-	<td class="info">
-		<?php print _('Send html mail instead of plain text'); ?>
+	<td class="info2">
+		<?php print _('Do not display free range in IP address and subnets list'); ?>
 	</td>
 </tr>
 
@@ -234,7 +315,7 @@ $langs = getLanguages ();
 	<td>
 		<input type="checkbox" value="1" name="donate" <?php if($settings['donate'] == 1) print 'checked'; ?>>
 	</td>
-	<td class="info">
+	<td class="info2">
 		<?php print _('Hide donation button'); ?>
 	</td>
 </tr>
@@ -243,7 +324,7 @@ $langs = getLanguages ();
 <tr>
 	<td class="title"><?php print _('IP visual display limit'); ?></td>
 	<td>
-		<select name="visualLimit" style="width:auto;">
+		<select name="visualLimit" class="form-control input-sm input-w-auto">
 			<?php
 			$opts = array(
 				"0"=>_("Don't show visual display"),
@@ -263,7 +344,7 @@ $langs = getLanguages ();
 			?>
 		</select>
 	</td>
-	<td class="info">
+	<td class="info2">
 		<?php print _('Select netmask limit for visual display of IP addresses (mask equal or bigger than - more then /22 not recommended)'); ?>
 	</td>
 </tr>
@@ -273,7 +354,7 @@ $langs = getLanguages ();
 <tr>
 	<td class="title"><?php print _('IP address print limit'); ?></td>
 	<td>
-		<select name="printLimit" style="width:auto;">
+		<select name="printLimit" class="form-control input-sm input-w-auto">
 			<?php
 			$opts = array(
 				"0"=>_("Show all"),
@@ -293,33 +374,8 @@ $langs = getLanguages ();
 			?>
 		</select>
 	</td>
-	<td class="info">
+	<td class="info2">
 		<?php print _('Number of IP addresses per page'); ?>
-	</td>
-</tr>
-
-<!-- Section ordering -->
-<tr>
-	<td class="title"><?php print _('Section ordering'); ?></td>
-	<td>
-		<select name="subnetOrdering" style="width:auto;">
-			<?php
-			$opts = array(
-				"name,asc"		=> _("Name, ascending"),
-				"name,desc"		=> _("Name, descending"),
-				"manual"		=> _("Manual"),
-			);
-			
-			foreach($opts as $key=>$line) {
-				if($settings['subnetOrdering'] == $key) { print "<option value='$key' selected>$line</option>"; }
-				else 									{ print "<option value='$key'>$line</option>"; }
-			}
-			
-			?>
-		</select>
-	</td>
-	<td class="info">
-		<?php print _('How to order display of sections'); ?>
 	</td>
 </tr>
 
@@ -327,14 +383,13 @@ $langs = getLanguages ();
 <tr>
 	<td class="title"><?php print _('Subnet ordering'); ?></td>
 	<td>
-		<select name="subnetOrdering" style="width:auto;">
+		<select name="subnetOrdering" class="form-control input-sm input-w-auto">
 			<?php
 			$opts = array(
 				"subnet,asc"		=> _("Subnet, ascending"),
 				"subnet,desc"		=> _("Subnet, descending"),
 				"description,asc"	=> _("Description, ascending"),
 				"description,desc"	=> _("Description, descending"),
-				"manual"		=> _("Manual"),
 			);
 			
 			foreach($opts as $key=>$line) {
@@ -345,7 +400,7 @@ $langs = getLanguages ();
 			?>
 		</select>
 	</td>
-	<td class="info">
+	<td class="info2">
 		<?php print _('How to order display of subnets'); ?>
 	</td>
 </tr>
@@ -363,7 +418,7 @@ $langs = getLanguages ();
 <tr class="th">
 	<td class="title"></td>
 	<td class="submit">
-		<input type="submit" class="btn btn-small btn-success pull-right" value="<?php print _('Save changes'); ?>">
+		<input type="submit" class="btn btn-sm btn-success pull-right" value="<?php print _('Save changes'); ?>">
 	</td>
 	<td></td>
 </tr>

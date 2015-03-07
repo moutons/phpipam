@@ -1,5 +1,3 @@
-This project is a fork from the original which can be found here : http://sourceforge.net/projects/phpipam/?source=directory
-
 Description 
 ===========	
 phpipam is an open-source web IP address management application. Its goal is to provide light and simple |P address management application. 
@@ -9,6 +7,7 @@ Features and tools:
 - Section / Subnet separation
 - Subnet nesting
 - IPv4/IPv6 support
+- Subnet ICMP/telnet scanning and automatic status updates
 - Displays free range and number of clients
 - Subnet statistics
 - User management
@@ -24,7 +23,6 @@ Features and tools:
 
 What it does not do:
 - Updates DNS server
-- Scan subnet range (for now)
 
 License
 =======
@@ -43,7 +41,6 @@ Requirements
     + + SimpleXML			: Adds SimpleXML support for parsin XML files
     + + gettext				: Add support for gettext translations
 - PHP PEAR support (dev-php/pear)
-
 
 Install 
 =======
@@ -72,17 +69,6 @@ See misc/Roadmap
 Contact
 =======
 miha.petkovsek@gmail.com
-
-Donors
-======
-Special thanks to following donors:
-	- Dicom Datautveckling AB
-	- Tatung Baby
-	- Suretec Systems Ltd.
-	- Uplifting Host
-	- Alun James
-	- Maxim Kravets
-	- VIBIZNES
 
 special thank also to Hosterdam team (http://www.hosterdam.com) for VPS server 
 that is used for development of phpIPAM and for demo site.

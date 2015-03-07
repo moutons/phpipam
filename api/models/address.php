@@ -1,154 +1,115 @@
 <?php
 
 /**
- *    phpIPAM Address class
+ *	phpIPAM Address class
  */
 
 class Address
-{    
-    
-    /**
-    * get address details
-    */
-    public function getAddress() {
-    
-        /**
-        * all addresses 
-        */
-        if($this->all) {
-            //get address by id
-            $res = fetchAllIPAddresses ();
-        }
+{
+	# variables
+	var $query;				// db query
+	var $result;			// array result from database
+	var $format;			// set IP format
+	
+	# classes
+	var $Database;			// to store database object
+	var $Common;			// Common functions 
+	
 
-        /** 
-        * all addresses in subnet
-        */
-        elseif($this->subnetId) {
-            //id must be set and numberic
-            if ( is_null($this->subnetId) || !is_numeric($this->subnetId) ){ throw new Exception('Invalid subnet Id - '.$this->subnetId); }
-            //get all addresses in subnet
-            $res = fetchAddresses ($this->subnetId);
-            //throw new exception if not existing
-            if(sizeof($res)==0) {
-                //check if subnet exists
-                if(sizeof(getSubnetDetailsById ($this->subnetId))==0){ throw new Exception('Subnet not existing');    }
-            }
-        }
-        
-        /** 
-        * address by id 
-        */
-        elseif($this->id) {
-            //id must be set and numberic
-            if ( is_null($this->id) || !is_numeric($this->id) )                 { throw new Exception('Address id not existing - '.$this->id); }
-            //get address by id
-            $res = getAddressDetailsById ($this->id);
-            //throw new exception if not existing
-            if(sizeof($res)==0)                                                 { throw new Exception('Address not existing'); }
-        }
-        
-        /**
-        * address by name 
-        */
-        elseif($this->name) {
-            //id must be set and numberic
-            if ( is_null($this->name) || strlen($this->name)==0 )               { throw new Exception('Invalid address name - '.$this->name); }
-            //get address by id
-            $res = getAddressDetailsByName ($this->name);
-            //throw new exception if not existing
-            if(sizeof($res)==0)                                                 { throw new Exception('Address not existing'); }
-        }
-        
-        /** 
-        * method missing 
-        */
-        else                                                                    { throw new Exception('Selector missing'); }
-
-        //create object from results
-        foreach($res as $key=>$line) {
-            $this->$key = $line;
-        }
-        //output format
-        $format = $this->format;
-        //remove input parameters from output
-        unset($this->all);                                                            //remove from result array
-        unset($this->format);
-        unset($this->name);    
-        unset($this->id);
-        unset($this->subnetId);    
-        //convert object to array
-        $result = $this->toArray($this, $format);    
-        //return result
-        return $result;
-    }
+	/**
+	 * 	construct
+	 */
+	public function __construct() 
+	{
+		# initialize database class
+		require( dirname(__FILE__) . '/../../config.php' );
+		$this->Database = new database($db['host'], $db['user'], $db['pass'], $db['name'], NULL, false);
+		# common class
+		$this->Common = new Common;
+		# set defauld method
+		$this->format = "decimal";
+	}
+	
+	
+	/**
+	 *	fetch form database
+	 */
+	private function fetchArray() 
+	{
+		try { $this->result = $this->Database->getArray( $this->query ); }
+	    catch (Exception $e) 											{ throw new Exception($e->getMessage()); }
+	}
 
 
-    /**
-    * create new address
-    */
-
-    public function createAddress() {
-        # verications
-        // id
-        // subnetId
-        // ip_addr
-        // description
-        // dns_name
-        // mac
-        // owner
-        // state
-        // switch
-        // port
-        // note
-        // lastSeen
-        // excludePing
-        // editDate
-        if(!isset($this->subnetId) || !is_numeric($this->subnetId))               { throw new Exception('Invalid subnet Id'); }                //mandatory parameters
-        if(!isset($this->ip_addr))                                                { throw new Exception('Invalid address'); }                  //mandatory parameters
-        // if($this->allowRequests != 0 || $this->allowRequests !=1)                 { throw new Exception('Invalid allow requests value'); }
-        // if($this->showName != 0 || $this->showName !=1)                           { throw new Exception('Invalid show Name value'); }
-        // if($this->pingAddress != 0 || $this->pingAddress !=1)                     { throw new Exception('Invalid ping address value'); }
+	/**
+	 *	execute query
+	 */
+	private function executeQuery() 
+	{
+		try { $this->result = $this->Database->executeQuery( $this->query ); }
+	    catch (Exception $e) 													{ throw new Exception($e->getMessage()); }
+	}
 
 
-        //output format
-        $format = $this->format;
-        
-        //create array to write new subnet
-        $newAddress = $this->toArray($this, $format);
-        //create new address
-        #$res = UpdateSubnet2 ($newSubnet, true);                                //true means from API    
-        $res = UpdateAddress ($newAddress, true);                                //true means from API    
-        //return result (true/false)
-        if(!$res)                                                                 { throw new Exception('Invalid query'); } 
-        else {
-            //format response
-            return "Address created";        
-        }
-    }
-    
+	/**
+	 * 	get IP addresses
+	 */
+	public function readAddress()
+	{
+		/* check input */
+		$this->Common->check_input;
+		
+		/* all addresses in subnet */
+		if($this->subnetId) {
+			//set query
+			$this->query = "select * from `ipaddresses` where `subnetId` = ".$this->subnetId.";";
+			$this->fetchArray();
+			if(sizeof($this->result)==0) 								{ throw new Exception('No addresses'); }
+		}
+		/* address by id */
+		elseif($this->id) {
+			//set query
+			$this->query = "select * from `ipaddresses` where `id` = ".$this->id.";";
+			$this->fetchArray();
+			if(sizeof($this->result)==0) 								{ throw new Exception('Invalid IP address Id '.$this->id); }
+		}
+		/* method missing */
+		else 															{ throw new Exception('Selector missing'); }
+	
+		//convert object to array
+		$result = $this->Common->toArray($this->result);
+		
+		//reformat?
+		if($this->format == "ip") { $result = $this->Common->format_ip($result); }
+			
+		//return result
+		return $result;
+	}
+	
 
-    /**
-    * function to return multidimensional array
-    */
-    public function toArray($obj, $format)
-    {
-        //if object create array
-        if(is_object($obj)) $obj = (array) $obj;
-        if(is_array($obj)) {
-            $arr = array();
-            foreach($obj as $key => $val) {
-                // proper format
-                if($key=="ip_addr" && $format=="ip") {
-                    $val = transform2long($val);
-                }
-                // output format
-                $arr[$key] = $this->toArray($val, $format);
-            }
-        }
-        else { 
-            $arr = $obj;
-        }
-        //return an array of items
-        return $arr;
-    }
+	/**
+	 *	delete Address 
+	 *		id must be provided
+	 */	
+	public function deleteAddress ()
+	{
+		//check input
+		$this->Common->check_var ("int", $this->id, null);
+		
+		//verify that it exists
+		try { $this->readAddress(); }
+		catch (Exception $e) 											{ throw new Exception($e->getMessage()); }
+
+		//set query and execute
+		$this->query = "delete from `ipaddresses` where `id` = ".$this->id.";";
+		$this->executeQuery();
+		
+		//set result
+		$result['result']   = "success";
+		$result['response'] = "Address ".$this->id." deleted successfully!";
+
+		//return result
+		return $result;
+	}
+	
 }

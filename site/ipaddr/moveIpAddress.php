@@ -13,10 +13,17 @@ require_once('../../functions/functions.php');
 /* check referer and requested with */
 CheckReferrer();
 
+/* filter input */
+$_POST = filter_user_input($_POST, true, true, false);
+
+/* must be numeric */
+if(!is_numeric($_POST['subnetId']))		{ die('<div class="alert alert-danger">'._("Invalid ID").'</div>'); }
+if(!is_numeric($_POST['id']))			{ die('<div class="alert alert-danger">'._("Invalid ID").'</div>'); }
+
 /* get posted values */
-$subnetId= $_REQUEST['subnetId'];
-$action  = $_REQUEST['action'];
-$id      = $_REQUEST['id'];
+$subnetId= $_POST['subnetId'];
+$action  = $_POST['action'];
+$id      = $_POST['id'];
 
 
 /* set subnet -> for adding new only */
@@ -43,9 +50,9 @@ $details = getIpAddrDetailsById ($id);
 		<td><?php print _('IP address'); ?>
 		</td>
 		<td>
-			<input type="text" name="ip_addr" class="ip_addr" value="<?php print $details['ip_addr']; ?>" size="30" readonly>
+			<input type="text" name="ip_addr" class="ip_addr form-control input-sm" value="<?php print $details['ip_addr']; ?>" size="30" readonly>
     		
-   			<input type="hidden" name="action" 	 	value="<?php print $_REQUEST['action']; 	?>">
+   			<input type="hidden" name="action" 	 	value="<?php print $_POST['action']; 	?>">
 			<input type="hidden" name="id" 		 	value="<?php print $id; 		?>">
 			<input type="hidden" name="subnet"   	value="<?php print $subnet; 	?>">
 			<input type="hidden" name="subnetId" 	value="<?php print $subnetId; 	?>">
@@ -56,7 +63,7 @@ $details = getIpAddrDetailsById ($id);
 	<tr>
 		<td><?php print _('Description'); ?></td>
 		<td>
-			<input type="text" name="description" value="<?php if(isset($details['description'])) {print $details['description'];} ?>" readonly>
+			<input type="text" name="description" class="ip_addr form-control input-sm" value="<?php if(isset($details['description'])) {print $details['description'];} ?>" readonly>
 		</td>
 	</tr>
 
@@ -67,7 +74,7 @@ $details = getIpAddrDetailsById ($id);
 		print '<tr>'. "\n";
 		print '	<td>'._('DNS name').'</td>'. "\n";
 		print '	<td>'. "\n";
-		print ' <input type="text" name="dns_name" size="30" readonly>'. "\n";
+		print ' <input type="text" class="ip_addr form-control input-sm" name="dns_name" size="30" readonly>'. "\n";
 		print '	</td>'. "\n";
 		print '</tr>'. "\n";
 	?>
@@ -80,7 +87,7 @@ $details = getIpAddrDetailsById ($id);
 	<tr>
 		<td><?php print _('Select new subnet'); ?>:</td>
 		<td>
-			<select name="newSubnet">
+			<select name="newSubnet" class="ip_addr form-control input-sm input-w-auto">
 				<?php
 				/* get ALL slave subnets, then remove all subnets and IP addresses */
 				global $removeSlaves;
@@ -106,8 +113,8 @@ $details = getIpAddrDetailsById ($id);
 
 <!-- footer -->
 <div class="pFooter">
-	<button class="btn btn-small hidePopups"><?php print _('Cancel'); ?></button>
-	<button class="btn btn-small" id="editIPAddressSubmit"><?php print _('Move IP address'); ?></button>
+	<button class="btn btn-sm btn-default hidePopups"><?php print _('Cancel'); ?></button>
+	<button class="btn btn-sm btn-default" id="editIPAddressSubmit"><?php print _('Move IP address'); ?></button>
 
 	<!-- holder for result -->
 	<div class="addnew_check"></div>

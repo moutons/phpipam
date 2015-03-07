@@ -8,17 +8,27 @@
 isUserAuthenticated ();
 
 /* get custom fields */
-$custom = getCustomSubnetFields();
+$custom = getCustomFields('subnets');
 
 /* get all site settings */
 $settings = getAllSettings();
 
+/* filter input */
+$_GET = filter_user_input($_GET, true, true, false);
+
+/* must be numeric */
+if(!is_numeric($_GET['section']))	{ die('<div class="alert alert-danger">'._("Invalid ID").'</div>'); }
+
+/* set hidden fields */
+$ffields = json_decode($settings['hiddenCustomFields'], true);		
+if(is_array($ffields['subnets']))	{ $ffields = $ffields['subnets']; }
+else								{ $ffields = array(); }
+
 # title
 print "<h4>"._('Available subnets')."</h4>";
 
-
 # check permission
-$permission = checkSectionPermission ($_REQUEST['section']);
+$permission = checkSectionPermission ($_GET['section']);
 if($permission != "0") {
 
 	# print  table structure
@@ -28,8 +38,8 @@ if($permission != "0") {
 		if($settings['enableVRF'] == 1)		{ $colCount = 8; }
 		else								{ $colCount = 7; }
 		
-		# get all subnets in section
-		$subnets = fetchSubnets($_REQUEST['section']);
+		# get Available subnets in section
+		$subnets = fetchSubnets($_GET['section']);
 		
 		# remove custom fields if all empty! */
 		foreach($custom as $field) {
@@ -58,32 +68,67 @@ if($permission != "0") {
 		print "	<th>"._('Description')."</th>";
 		print "	<th>"._('VLAN')."</th>";
 		if($settings['enableVRF'] == 1) {
-		print "	<th>"._('VRF')."</th>";
+		print "	<th class='hidden-xs hidden-sm'>"._('VRF')."</th>";
 		}
-		// <eNovance>
-		// Removed 'Requests' and 'Hosts check' column since they are not necessary for us
+		print "	<th class='hidden-xs hidden-sm'>"._('Requests')."</th>";
+		print "	<th class='hidden-xs hidden-sm'>"._('Hosts check')."</th>";
 		if(sizeof($custom) > 0) {
 			foreach($custom as $field) {
-				print "	<th>$field[name]</th>";
+				if(!in_array($field['name'], $ffields)) {
+					print "	<th class='hidden-xs hidden-sm'>$field[name]</th>";
+				}
 			}
 		}
-		// <eNovance>
-		// Add the Reserved and Free columns
-		print " <th>"._('Reserved')."</th>";
-		print " <th>"._('Free')."</th>";
 		print "	<th class='actions' style='width:140px;white-space:nowrap;'></th>";
 		print "</tr>";
-		// </eNovance>
-
+	
 		# no subnets
 		if(sizeof($subnets) == 0) {
-			print "<tr><td colspan='$colCount'><div class='alert alert-warn'>"._('Section has no subnets')."!</div></td></tr>";
+			print "<tr><td colspan='$colCount'><div class='alert alert-info'>"._('Section has no subnets')."!</div></td></tr>";
+				
+			# check Available subnets for subsection
+			$subsections = getAllSubSections($_GET['section']);
+			
+			$colspan = 6 + sizeof($custom);
+			if($settings['enableVRF'] == 1) { $colspan++; }
 		}	
 		else {
 			# subnets
 			$subnets2 = printSubnets($subnets, true, $settings['enableVRF'], $custom);
 			print $subnets2;				
 		}
+
+		# subsection subnets
+		if(sizeof($subsections)>0) {
+
+			$colspan = 6 + sizeof($custom);
+			if($settings['enableVRF'] == 1) { $colspan++; }
+			
+			# subnets
+			foreach($subsections as $ss) {
+				$slavesubnets = fetchSubnets($ss['id']);
+				if(sizeof($slavesubnets)>0) {
+					# headers
+					print "<tr>";
+					print "	<th colspan='$colspan'>"._('Available subnets in subsection')." $ss[name]:</th>";
+					print "</tr>";
+					
+					# subnets
+					$subnets3 = printSubnets($slavesubnets, true, $settings['enableVRF'], $custom);
+					print $subnets3;
+				}
+				else {
+					print "<tr>";
+					print "	<th colspan='$colspan'>"._('Available subnets in subsection')." $ss[name]:</th>";
+					print "</tr>";	
+					
+					print "<tr>";
+					print "	<td colspan='$colspan'><div class='alert alert-info'>"._('Section has no subnets')."!</div></td>";
+					print "</tr>";			
+				}
+			}				
+		} 
+
 		print "</tbody>";
 		$m++;
 	
@@ -91,6 +136,6 @@ if($permission != "0") {
 	print "</table>";
 }
 else {
-	print "<div class='alert alert-error'>"._("You do not have permission to access this network")."!</div>";
+	print "<div class='alert alert-danger'>"._("You do not have permission to access this network")."!</div>";
 }
 ?>

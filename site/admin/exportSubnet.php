@@ -19,8 +19,11 @@ require_once '../../functions/PEAR/Spreadsheet/Excel/Writer.php';
 $filename = "phpipam_subnet_export.xls";
 $workbook = new Spreadsheet_Excel_Writer();
 
+/* filter input */
+$_GET = filter_user_input($_GET, true, true, false);
+
 //get requested subnet Id
-$subnetId = $_REQUEST['subnetId'];
+$subnetId = $_GET['subnetId'];
 
 //get all subnet details
 $subnet = getSubnetDetailsById ($subnetId);
@@ -29,7 +32,7 @@ $subnet = getSubnetDetailsById ($subnetId);
 $ipaddresses = getIpAddressesBySubnetId ($subnetId);
 
 //get all custom fields!
-$myFields = getCustomIPaddrFields();
+$myFields = getCustomFields('ipaddresses');
 $myFieldsSize = sizeof($myFields);
 
 //formatting headers
@@ -63,7 +66,10 @@ $colSize = $colSize + $myFieldsSize -2;
 
 
 // Create a worksheet
-$worksheet =& $workbook->addWorksheet($subnet['description']);
+//$worksheet =& $workbook->addWorksheet($subnet['description']);
+$worksheet_name = $subnet['description']; 
+$worksheet_name = (strlen($worksheet_name) > 30) ? substr($worksheet_name,0,27).'...' : $worksheet_name; 
+$worksheet =& $workbook->addWorksheet($worksheet_name); 
 
 $lineCount = 0;
 
@@ -91,55 +97,58 @@ $lineCount++;
 $rowCount = 0;
 
 //write headers
-	if( (isset($_GET['ip_addr'])) && ($_GET['ip_addr'] == "on") ) {
-		$worksheet->write($lineCount, $rowCount, _('ip address') ,$format_title);
-		$rowCount++;
-	}
-	if( (isset($_GET['state'])) && ($_GET['state'] == "on") ) {
-		$worksheet->write($lineCount, $rowCount, _('ip state') ,$format_title);
-		$rowCount++;
-	}
-	if( (isset($_GET['description'])) && ($_GET['description'] == "on") ) {
-		$worksheet->write($lineCount, $rowCount, _('description') ,$format_title);
-		$rowCount++;
-	}
-	if( (isset($_GET['dns_name'])) && ($_GET['dns_name'] == "on") ) {
-		$worksheet->write($lineCount, $rowCount, _('hostname') ,$format_title);
-		$rowCount++;
-	}
-	if( (isset($_GET['mac'])) && ($_GET['mac'] == "on") ) {
-		$worksheet->write($lineCount, $rowCount, _('mac') ,$format_title);
-		$rowCount++;
-	}
-	if( (isset($_GET['owner'])) && ($_GET['owner'] == "on") ) {
-		$worksheet->write($lineCount, $rowCount, _('owner') ,$format_title);
-		$rowCount++;
-	}
-	if( (isset($_GET['switch'])) && ($_GET['switch'] == "on") ) {
-		$worksheet->write($lineCount, $rowCount, _('switch') ,$format_title);
-		$rowCount++;
-	}
-	if( (isset($_GET['port'])) && ($_GET['port'] == "on") ) {
-		$worksheet->write($lineCount, $rowCount, _('port') ,$format_title);
-		$rowCount++;
-	}
-	if( (isset($_GET['note'])) && ($_GET['note'] == "on") ) {
-		$worksheet->write($lineCount, $rowCount, _('note') ,$format_title);
-		$rowCount++;
-	}
-	
-	//custom
-	if(sizeof($myFields) > 0) {
-		foreach($myFields as $myField) {
-			if( (isset($_GET[$myField['name']])) && ($_GET[$myField['name']] == "on") ) {
-				$worksheet->write($lineCount, $rowCount, $myField['name'] ,$format_title);
-				$rowCount++;
-			}
+if( (isset($_GET['ip_addr'])) && ($_GET['ip_addr'] == "on") ) {
+	$worksheet->write($lineCount, $rowCount, _('ip address') ,$format_title);
+	$rowCount++;
+}
+if( (isset($_GET['state'])) && ($_GET['state'] == "on") ) {
+	$worksheet->write($lineCount, $rowCount, _('ip state') ,$format_title);
+	$rowCount++;
+}
+if( (isset($_GET['description'])) && ($_GET['description'] == "on") ) {
+	$worksheet->write($lineCount, $rowCount, _('description') ,$format_title);
+	$rowCount++;
+}
+if( (isset($_GET['dns_name'])) && ($_GET['dns_name'] == "on") ) {
+	$worksheet->write($lineCount, $rowCount, _('hostname') ,$format_title);
+	$rowCount++;
+}
+if( (isset($_GET['mac'])) && ($_GET['mac'] == "on") ) {
+	$worksheet->write($lineCount, $rowCount, _('mac') ,$format_title);
+	$rowCount++;
+}
+if( (isset($_GET['owner'])) && ($_GET['owner'] == "on") ) {
+	$worksheet->write($lineCount, $rowCount, _('owner') ,$format_title);
+	$rowCount++;
+}
+if( (isset($_GET['switch'])) && ($_GET['switch'] == "on") ) {
+	$worksheet->write($lineCount, $rowCount, _('switch') ,$format_title);
+	$rowCount++;
+}
+if( (isset($_GET['port'])) && ($_GET['port'] == "on") ) {
+	$worksheet->write($lineCount, $rowCount, _('port') ,$format_title);
+	$rowCount++;
+}
+if( (isset($_GET['note'])) && ($_GET['note'] == "on") ) {
+	$worksheet->write($lineCount, $rowCount, _('note') ,$format_title);
+	$rowCount++;
+}
+
+//custom
+if(sizeof($myFields) > 0) {
+	foreach($myFields as $myField) {
+		//set temp name - replace space with three ___
+		$myField['nameTemp'] = str_replace(" ", "___", $myField['name']);
+		
+		if( (isset($_GET[$myField['nameTemp']])) && ($_GET[$myField['nameTemp']] == "on") ) {
+			$worksheet->write($lineCount, $rowCount, $myField['name'] ,$format_title);
+			$rowCount++;
 		}
 	}
+}
+	
 		
-			
-	$lineCount++;
+$lineCount++;
 		
 //write all IP addresses
 foreach ($ipaddresses as $ip) {
@@ -152,6 +161,13 @@ foreach ($ipaddresses as $ip) {
 		case 0: $ip['state'] = _("Offline");	break;
 		case 1: $ip['state'] = _("Active");		break;
 		case 2: $ip['state'] = _("Reserved");	break;
+		case 3: $ip['state'] = _("DHCP");		break;
+	}
+	
+	//change switch ID to name
+	$devices = getAllUniqueDevices ();
+	foreach($devices as $d) {
+		if($d['id']==$ip['switch'])	{ $ip['switch']=$d['hostname']; }
 	}
 	
 	if( (isset($_GET['ip_addr'])) && ($_GET['ip_addr'] == "on") ) {
@@ -194,7 +210,10 @@ foreach ($ipaddresses as $ip) {
 	//custom
 	if(sizeof($myFields) > 0) {
 		foreach($myFields as $myField) {
-			if( (isset($_GET[$myField['name']])) && ($_GET[$myField['name']] == "on") ) {
+			//set temp name - replace space with three ___
+			$myField['nameTemp'] = str_replace(" ", "___", $myField['name']);
+			
+			if( (isset($_GET[$myField['nameTemp']])) && ($_GET[$myField['nameTemp']] == "on") ) {
 				$worksheet->write($lineCount, $rowCount, $ip[$myField['name']]);
 				$rowCount++;
 			}

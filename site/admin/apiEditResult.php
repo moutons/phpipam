@@ -10,6 +10,10 @@ require_once('../../functions/functions.php');
 /* verify that user is admin */
 checkAdmin();
 
+/* filter input */
+$_POST = filter_user_input($_POST, true, true, false);
+$_POST['action'] = filter_user_input($_POST['action'], false, false, true);
+
 /* checks */
 $error = array();
 
@@ -19,12 +23,12 @@ if($_POST['action']!="delete") {
 	# name must be more than 2 and alphanumberic
 	if(strlen($_POST['app_id'])<3 || strlen($_POST['app_id'])>12 || !ctype_alnum($_POST['app_id']))			{ $error[] = "Invalid application id"; }
 	# permissions must be 0,1,2
-	if(!($_POST['app_permissions']==0 || $_POST['app_permissions']==1 || $_POST['app_permissions'] ==2 ))	{ $error[] = "Invalid permissions"; }
+	if(!($_POST['app_permissions']==0 || $_POST['app_permissions']==1 || $_POST['app_permissions'] ==2 || $_POST['app_permissions'] ==3 ))	{ $error[] = "Invalid permissions"; }
 }
 
 # die if errors
 if(sizeof($error) > 0) {
-	print "<div class='alert alert-error'>";
+	print "<div class='alert alert alert-danger'>";
 	print _('Error');
 	print "<ul>";
 	foreach($error as $err) {
@@ -35,7 +39,7 @@ if(sizeof($error) > 0) {
 }
 else {
 	/* try to execute */
-	if(!modifyAPI($_POST)) 	{ print "<div class='alert alert-error'  >"._("API $_POST[action] error")."!</div>"; }
+	if(!modifyAPI($_POST)) 	{ print "<div class='alert alert alert-danger'>"._("API $_POST[action] error")."!</div>"; }
 	else 					{ print "<div class='alert alert-success'>"._("API $_POST[action] success")."!</div>"; }	
 }
 

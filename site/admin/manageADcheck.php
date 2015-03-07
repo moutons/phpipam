@@ -12,6 +12,9 @@ ini_set('display_errors', 0);
 /* verify that user is admin */
 checkAdmin();
 
+/* filter input */
+$_POST = filter_user_input($_POST, true, true, false);
+
 /* get settings */
 $ad = $_POST;
 
@@ -32,14 +35,14 @@ try {
 	    						));
 }
 catch (adLDAPException $e) {
-	die ('<div class="alert alert-error">'. $e .'</div>');
+	die ('<div class="alert alert alert-danger">'. $e .'</div>');
 }
 
 
 foreach($ad['domain_controllers'] as $line) {
 
 	$fp = fsockopen($line, $ad['ad_port'], $errno, $errstr, 3); 
-	if (!$fp) 	{ print '<div class="alert alert-error">'. $line .': '. $errstr .' ('. $errno .')</div>';}
+	if (!$fp) 	{ print '<div class="alert alert alert-danger">'. $line .': '. $errstr .' ('. $errno .')</div>';}
 	else 		{ print '<div class="alert alert-success">'. $line .': '._('AD network connection ok').'!</div>';}
 
 }
